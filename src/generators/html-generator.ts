@@ -617,7 +617,7 @@ export function generateHtml(data: HtmlGeneratorData): string {
   const quarantineCount = quarantinedTestIds?.size ?? 0;
   const outputBasename = data.outputBasename ?? 'smart-report';
   const branding = options.branding;
-  const reportTitle = branding?.title ?? 'StageWright Local';
+  const reportTitle = branding?.title ?? 'Sentinel';
   const reportSubtitle = branding?.title ? '' : 'Get your test stage right.';
   const enableTraceViewer = options.enableTraceViewer !== false;
   const showTraceSection = enableTraceViewer;
