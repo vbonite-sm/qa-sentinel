@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Read(//d/Projects/**)",
+      "WebFetch(domain:github.com)",
+      "Bash(git clone https://github.com/qa-gary-parker/qa-sentinel.git /tmp/psr-upstream)",
+      "Bash(openssl ecparam -name prime256v1 -genkey -noout -out /tmp/qa-sentinel-private.pem)",
+      "Bash(openssl ec -in /tmp/qa-sentinel-private.pem -pubout -out /d/Projects/qa-sentinel/keys/public.pem)",
+      "Bash(npm install)",
+      "Bash(npm run build)",
+      "Bash(npm test)",
+      "Bash(git add .)"
+    ]
+  }
+}

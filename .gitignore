@@ -1,0 +1,44 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+.env
+*.bak
+*.bak*
+
+# Test artifacts
+test-results/
+playwright-report/
+blob-report/
+blob-reports/
+blobs/
+
+# Example outputs
+example/qa-sentinel-report.html
+example/smart-report.html
+example/test-history.json
+example/parallel/qa-sentinel-report.html
+example/parallel/smart-report.html
+example/parallel/test-history.json
+example/history-runs/
+example/traces/
+example/*.pdf
+example/*.xml
+example/*-data.json
+example/.qa-sentinel-quarantine.json
+example/.smart-quarantine.json
+example/test-history-premium.json
+example/premium-report.html
+
+# Temp/generated files
+.generate-report.js
+.qa-sentinel-data.json
+.smart-reporter-data.json
+.playwright-mcp/
+
+# License keys — private key only; public key is committed
+keys/private.pem
+
+# Upstream artifacts — replaced by qa_sentinel_python/
+python/playwright_smart_reporter_python/
+*.tgz
