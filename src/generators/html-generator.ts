@@ -666,6 +666,46 @@ export function generateHtml(data: HtmlGeneratorData): string {
   // Stats data for JavaScript
   const statsData = JSON.stringify({ passed, failed, skipped, flaky, slow, newTests, total, passRate, gradeA, gradeB, gradeC, gradeD, gradeF, totalDuration });
 
+  // Pre-compute tag groups for "By Tag" tab (sorted: most failures first, then by total count)
+  const tagGroupsData = sortedTags.map(([tag]) => {
+    const tagTests = sortedResults.filter(r => r.tags && r.tags.includes(tag));
+    const tagPassed = tagTests.filter(r => r.status === 'passed').length;
+    const tagFailed = tagTests.filter(r => r.status === 'failed' || r.status === 'timedOut').length;
+    const tagSkipped = tagTests.filter(r => r.status === 'skipped').length;
+    return { tag, tests: tagTests, passed: tagPassed, failed: tagFailed, skipped: tagSkipped };
+  }).sort((a, b) => b.failed - a.failed || b.tests.length - a.tests.length);
+  const untaggedResults = sortedResults.filter(r => !r.tags || r.tags.length === 0);
+
+  let byTagTabHtml = '';
+  if (sortedTags.length > 0) {
+    const tagGroupsHtml = tagGroupsData.map(({ tag, tests, passed: tPassed, failed: tFailed, skipped: tSkipped }) => {
+      const statsHtml = [
+        tFailed > 0 ? `<span class="tag-stat tag-stat-failed">${tFailed} failed</span>` : '',
+        tPassed > 0 ? `<span class="tag-stat tag-stat-passed">${tPassed} passed</span>` : '',
+        tSkipped > 0 ? `<span class="tag-stat tag-stat-skipped">${tSkipped} skipped</span>` : '',
+      ].filter(Boolean).join('');
+      return `              <div class="tag-group">
+                <div class="tag-group-header">
+                  <span class="tag-group-label">${escapeHtml(tag)}</span>
+                  <div class="tag-group-stats">${statsHtml}</div>
+                  <span class="tag-group-count">${tests.length} test${tests.length !== 1 ? 's' : ''}</span>
+                </div>
+                ${generateTestListItems(tests, showTraceSection, attentionSets, quarantinedTestIds)}
+              </div>`;
+    }).join('');
+    const untaggedHtml = untaggedResults.length > 0 ? `              <div class="tag-group tag-group-untagged">
+                <div class="tag-group-header">
+                  <span class="tag-group-label tag-group-label-untagged">Untagged</span>
+                  <span class="tag-group-count">${untaggedResults.length} test${untaggedResults.length !== 1 ? 's' : ''}</span>
+                </div>
+                ${generateTestListItems(untaggedResults, showTraceSection, attentionSets, quarantinedTestIds)}
+              </div>` : '';
+    byTagTabHtml = `              <div class="test-tab-content" id="tab-by-tag" role="tabpanel" aria-label="Tests grouped by tag">
+                ${tagGroupsHtml}
+                ${untaggedHtml}
+              </div>`;
+  }
+
   return `<!DOCTYPE html>
 <html lang="en"${options.theme?.preset && options.theme.preset !== 'default' ? ` data-theme="${options.theme.preset}"` : ''}>
 <head>
@@ -922,6 +962,12 @@ ${quarantineCount > 0 ? `            <button class="filter-chip attention-quaran
             ${sortedTags.slice(0, 8).map(([tag, count]) =>
               `<button class="filter-chip tag-chip" data-filter="tag-${escapeHtml(tag)}" data-group="tag" data-tag-name="${escapeHtml(tag)}" onclick="toggleFilter(this)" aria-pressed="false" title="${escapeHtml(tag)} (${count} tests)">${escapeHtml(tag)} (${count})</button>`
             ).join('')}
+            ${sortedTags.length > 8 ? `<div id="tag-overflow-chips" style="display:none; flex-wrap:wrap; gap:0.25rem; width:100%;">
+              ${sortedTags.slice(8).map(([tag, count]) =>
+                `<button class="filter-chip tag-chip" data-filter="tag-${escapeHtml(tag)}" data-group="tag" data-tag-name="${escapeHtml(tag)}" onclick="toggleFilter(this)" aria-pressed="false" title="${escapeHtml(tag)} (${count} tests)">${escapeHtml(tag)} (${count})</button>`
+              ).join('')}
+            </div>
+            <button class="show-more-tags-btn" onclick="toggleMoreTags(this)" data-count="${sortedTags.length - 8}">+${sortedTags.length - 8} more</button>` : ''}
           </div>
         </div>
         ` : ''}
@@ -967,6 +1013,7 @@ ${quarantineCount > 0 ? `            <button class="filter-chip attention-quaran
                 <button class="tab-btn" data-tab="by-file" onclick="switchTestTab('by-file')" role="tab" aria-selected="false" aria-controls="tab-by-file">By Spec</button>
                 <button class="tab-btn" data-tab="by-status" onclick="switchTestTab('by-status')" role="tab" aria-selected="false" aria-controls="tab-by-status">By Status</button>
                 <button class="tab-btn" data-tab="by-stability" onclick="switchTestTab('by-stability')" role="tab" aria-selected="false" aria-controls="tab-by-stability">By Stability</button>
+                ${sortedTags.length > 0 ? `<button class="tab-btn" data-tab="by-tag" onclick="switchTestTab('by-tag')" role="tab" aria-selected="false" aria-controls="tab-by-tag">By Tag</button>` : ''}
               </div>
               <div class="test-list-search">
                 <input type="text" class="inline-search" placeholder="Filter tests..." oninput="searchTests(this.value)" aria-label="Filter tests by name">
@@ -1030,6 +1077,7 @@ ${quarantineCount > 0 ? `            <button class="filter-chip attention-quaran
                   `;
                 }).join('')}
               </div>
+              ${byTagTabHtml}
             </div>
           </div>
 
@@ -1940,6 +1988,24 @@ ${highContrastOverride}${customOverrides}
     .filter-chip.grade-d:hover, .filter-chip.grade-d.active { background: var(--accent-orange); color: var(--bg-primary); border-color: var(--accent-orange); }
     .filter-chip.grade-f { border-color: var(--accent-red-dim); }
     .filter-chip.grade-f:hover, .filter-chip.grade-f.active { background: var(--accent-red); color: var(--bg-primary); border-color: var(--accent-red); }
+
+    .show-more-tags-btn {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.5rem;
+      border: 1px dashed var(--border-subtle);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+      margin-top: 0.125rem;
+    }
+
+    .show-more-tags-btn:hover {
+      color: var(--accent-blue);
+      border-color: var(--accent-blue);
+    }
 
     /* Attention filter chips */
     .attention-chips .filter-chip {
@@ -2892,6 +2958,77 @@ ${highContrastOverride}${customOverrides}
     .status-group-dot.passed { background: var(--accent-green); }
     .status-group-dot.failed { background: var(--accent-red); }
     .status-group-dot.skipped { background: var(--text-muted); }
+
+    /* Tag grouping */
+    .tag-group {
+      margin-bottom: 0.5rem;
+    }
+
+    .tag-group-header {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 0.25rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border-left: 3px solid var(--accent-blue);
+      background: var(--bg-card);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .tag-group-label {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent-blue);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .tag-group-label-untagged {
+      color: var(--text-muted);
+      font-family: inherit;
+      font-style: italic;
+    }
+
+    .tag-group-stats {
+      display: flex;
+      gap: 0.35rem;
+      flex: 1;
+    }
+
+    .tag-stat {
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+    }
+
+    .tag-stat-failed {
+      background: rgba(255, 68, 102, 0.15);
+      color: var(--accent-red);
+    }
+
+    .tag-stat-passed {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--accent-green);
+    }
+
+    .tag-stat-skipped {
+      background: rgba(148, 163, 184, 0.12);
+      color: var(--text-muted);
+    }
+
+    .tag-group-count {
+      margin-left: auto;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .tag-group-untagged .tag-group-header {
+      border-left-color: var(--border-subtle);
+    }
 
     /* Test Detail Panel */
     .test-detail-panel {
@@ -7168,6 +7305,15 @@ function generateScripts(
         chip.setAttribute('aria-pressed', 'false');
       });
       applyFilters();
+    }
+
+    function toggleMoreTags(btn) {
+      const overflow = document.getElementById('tag-overflow-chips');
+      if (!overflow) return;
+      const isHidden = overflow.style.display === 'none';
+      overflow.style.display = isHidden ? 'flex' : 'none';
+      const count = parseInt(btn.dataset.count, 10);
+      btn.textContent = isHidden ? 'Show less' : '+' + count + ' more';
     }
 
     function applyFilters() {
