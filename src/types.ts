@@ -45,7 +45,7 @@ export interface NotificationCondition {
 }
 
 export interface NotificationConfig {
-  channel: 'slack' | 'teams' | 'pagerduty' | 'email' | 'webhook';
+  channel: 'slack' | 'teams' | 'pagerduty' | 'email' | 'webhook' | 'github';
   config: Record<string, string>;
   conditions?: NotificationCondition;
   template?: string;
@@ -148,6 +148,10 @@ export interface QaSentinelOptions {
   // Issue #26: External run ID for consistent IDs across CI shards
   runId?: string;                  // Unique identifier for this test run (e.g. GITHUB_RUN_ID)
 
+  // GitHub PR comments — auto-enabled when GITHUB_TOKEN + PR context are present.
+  // Set to false to opt out.
+  githubPRComments?: boolean;
+
   // Premium: License key (also from QA_SENTINEL_LICENSE_KEY env var)
   licenseKey?: string;
 
@@ -245,6 +249,7 @@ export interface CIInfo {
   branch?: string;
   commit?: string;
   buildId?: string;
+  prNumber?: number;  // Pull request number (GitHub Actions pull_request event)
 }
 
 // ============================================================================
@@ -515,4 +520,42 @@ export interface DigestOptions {
   output?: string;
   ai?: boolean;
   format?: 'markdown' | 'text';
+}
+
+// ============================================================================
+// Sentinel CLI Types
+// ============================================================================
+
+export interface SentinelConfig {
+  agent?: {
+    heal?: boolean
+    cdp?: boolean
+    circuitBreakerThreshold?: number
+  }
+  sage?: {
+    ai?: 'claude' | 'openai'
+    digest?: boolean
+    historyDepth?: number
+  }
+  scribe?: {
+    jira?: boolean
+    github?: boolean
+    slack?: boolean
+    teams?: boolean
+    jiraCloseOnNConsecutivePasses?: number
+  }
+  seer?: {
+    predict?: boolean
+    minConfidence?: number
+    diffBase?: string
+  }
+}
+
+export interface RunManifest {
+  runId: string
+  timestamp: string
+  branch?: string
+  commitSha?: string
+  exitCode: number
+  durationMs: number
 }
