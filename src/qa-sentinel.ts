@@ -60,7 +60,7 @@ import { buildComparison } from './generators/comparison-generator';
 import { exportJsonData } from './generators/json-exporter';
 import { exportJunitXml } from './generators/junit-exporter';
 import { exportPdfReport } from './generators/pdf-exporter';
-import { SlackNotifier, TeamsNotifier, NotificationManager } from './notifiers';
+import { SlackNotifier, TeamsNotifier, NotificationManager, GitHubPRNotifier } from './notifiers';
 import { CloudUploader } from './cloud/uploader';
 import { LicenseValidator } from './license';
 import { QualityGateEvaluator, formatGateReport } from './gates';
@@ -119,6 +119,7 @@ class QaSentinel implements Reporter {
   private runnerErrors: string[] = [];
   private ciInfo?: CIInfo;
   private resolvedPerformanceThreshold: number = 0.2;
+  private readonly isCLIMode: boolean = process.env['SENTINEL_CLI_MODE'] === '1';
 
   constructor(options: QaSentinelOptions = {}) {
     this.options = options;
@@ -167,6 +168,11 @@ class QaSentinel implements Reporter {
     // Initialize advanced notification manager if configured (Pro feature)
     if (options.notifications && LicenseValidator.hasFeature(this.license, 'pro')) {
       this.notificationManager = new NotificationManager(options.notifications);
+    }
+
+    if (this.isCLIMode) {
+      const runId = process.env['SENTINEL_RUN_ID'] ?? 'unknown';
+      console.log(`qa-sentinel: CLI mode active (run ${runId})`);
     }
   }
 
@@ -749,6 +755,15 @@ class QaSentinel implements Reporter {
       if (failed > 0) {
         await this.slackNotifier.notify(this.results);
         await this.teamsNotifier.notify(this.results);
+      }
+    }
+
+    // GitHub PR comment — auto-enabled on pull_request runs when GITHUB_TOKEN is present.
+    // Opt out by setting githubPRComments: false in reporter options.
+    if (this.options.githubPRComments !== false) {
+      const ghNotifier = GitHubPRNotifier.fromEnv(this.ciInfo);
+      if (ghNotifier) {
+        await ghNotifier.notify(this.results, this.startTime, comparison);
       }
     }
 
