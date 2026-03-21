@@ -528,34 +528,34 @@ export interface DigestOptions {
 
 export interface SentinelConfig {
   agent?: {
-    heal?: boolean
-    cdp?: boolean
-    circuitBreakerThreshold?: number
-  }
+    heal?: boolean;
+    cdp?: boolean;
+    circuitBreakerThreshold?: number;
+  };
   sage?: {
-    ai?: 'claude' | 'openai'
-    digest?: boolean
-    historyDepth?: number
-  }
+    ai?: 'claude' | 'openai';
+    digest?: boolean;
+    historyDepth?: number;
+  };
   scribe?: {
-    jira?: boolean
-    github?: boolean
-    slack?: boolean
-    teams?: boolean
-    jiraCloseOnNConsecutivePasses?: number
-  }
+    jira?: boolean;
+    github?: boolean;
+    slack?: boolean;
+    teams?: boolean;
+    jiraCloseOnNConsecutivePasses?: number;
+  };
   seer?: {
-    predict?: boolean
-    minConfidence?: number
-    diffBase?: string
-  }
+    predict?: boolean;
+    minConfidence?: number;
+    diffBase?: string;
+  };
 }
 
 export interface RunManifest {
-  runId: string
-  timestamp: string
-  branch?: string
-  commitSha?: string
-  exitCode: number
-  durationMs: number
+  runId: string;
+  timestamp: string;
+  branch?: string;
+  commitSha?: string;
+  exitCode: number;
+  durationMs: number;
 }
