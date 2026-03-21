@@ -42,3 +42,7 @@ keys/private.pem
 # Upstream artifacts — replaced by qa_sentinel_python/
 python/playwright_smart_reporter_python/
 *.tgz
+.superpowers/
+
+# Sentinel data store
+.sentinel/
