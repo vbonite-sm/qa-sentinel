@@ -7,10 +7,10 @@ import type { RunManifest } from '../../types'
 
 function findPlaywrightBin(root: string): string {
   const local = path.join(root, 'node_modules', '.bin', 'playwright')
-  if (fs.existsSync(local)) return local
-  // Windows adds .cmd extension
+  // On Windows, spawn() cannot execute the bash shim — prefer the .cmd wrapper
   const localCmd = `${local}.cmd`
   if (fs.existsSync(localCmd)) return localCmd
+  if (fs.existsSync(local)) return local
   return 'playwright' // fall back to PATH
 }
 
@@ -26,9 +26,13 @@ export async function runTest(
   const playwrightBin = findPlaywrightBin(root)
   const startMs = Date.now()
 
+  // On Windows, .cmd files require shell: true to be spawnable
+  const useShell = playwrightBin.endsWith('.cmd')
+
   return new Promise((resolve, reject) => {
     const child = spawn(playwrightBin, ['test', ...playwrightArgs], {
       stdio: 'inherit',
+      shell: useShell,
       env: {
         ...process.env,
         SENTINEL_CLI_MODE: '1',

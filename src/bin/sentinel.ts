@@ -19,6 +19,7 @@ program
   .description('Run Playwright tests with Sentinel intelligence')
   .allowUnknownOption()
   .passThroughOptions()
+  .argument('[args...]', 'Playwright CLI arguments passed through verbatim')
   .action(async function (this: Command) {
     // `this.args` is the reliable way to get pass-through args with commander
     // when using .passThroughOptions() + .allowUnknownOption()
