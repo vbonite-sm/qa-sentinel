@@ -8,3 +8,4 @@ export { PagerDutyNotifier } from './pagerduty-notifier';
 export { EmailNotifier } from './email-notifier';
 export { CustomWebhookNotifier } from './custom-webhook-notifier';
 export { NotificationManager } from './notification-manager';
+export { GitHubPRNotifier } from './github-pr-notifier';
