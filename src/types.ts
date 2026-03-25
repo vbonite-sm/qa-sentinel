@@ -1,20 +1,6 @@
 import type { TestCase, TestResult } from '@playwright/test/reporter';
 
 // ============================================================================
-// Licensing
-// ============================================================================
-
-export type LicenseTier = 'community' | 'pro' | 'team';
-
-export interface LicenseInfo {
-  tier: LicenseTier;
-  valid: boolean;
-  org?: string;
-  expiry?: string;
-  error?: string;
-}
-
-// ============================================================================
 // Premium Configuration
 // ============================================================================
 
@@ -152,33 +138,30 @@ export interface QaSentinelOptions {
   // Set to false to opt out.
   githubPRComments?: boolean;
 
-  // Premium: License key (also from QA_SENTINEL_LICENSE_KEY env var)
-  licenseKey?: string;
-
-  // Premium: Export options (Pro tier)
+  // Export options
   exportJson?: boolean;            // Write smart-report-data.json alongside HTML
   exportPdf?: boolean;             // Generate PDF executive summary
   exportJunit?: boolean;           // Generate JUnit XML output
 
-  // Premium: Custom themes (Pro tier)
+  // Custom themes
   theme?: ThemeConfig;
 
-  // Premium: Advanced notifications (Pro tier)
+  // Advanced notifications
   notifications?: NotificationConfig[];
 
-  // Premium: AI configuration (Pro tier for model selection)
+  // AI configuration
   ai?: AIConfig;
 
-  // Premium: Report branding (Pro tier)
+  // Report branding
   branding?: BrandingConfig;
 
-  // Premium: Quality gates (Pro tier) - CI pipeline pass/fail rules
+  // Quality gates — CI pipeline pass/fail rules
   qualityGates?: QualityGateConfig;
 
-  // Premium: Flakiness quarantine (Pro tier) - auto-quarantine flaky tests
+  // Flakiness quarantine — auto-quarantine flaky tests
   quarantine?: QuarantineConfig;
 
-  // Premium: Full PDF report (legacy HTML-to-PDF, replaces default executive PDF)
+  // Full PDF report (legacy HTML-to-PDF, replaces default executive PDF)
   exportPdfFull?: boolean;
 }
 
