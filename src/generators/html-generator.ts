@@ -5,7 +5,7 @@
  * REDESIGNED: Modern app-shell layout with sidebar, top bar, and master-detail view
  */
 
-import type { TestResultData, TestHistory, RunComparison, RunSnapshotFile, QaSentinelOptions, FailureCluster, CIInfo, LicenseTier, ThemeConfig, BrandingConfig, QualityGateResult, QualityGateRuleResult, QuarantineEntry } from '../types';
+import type { TestResultData, TestHistory, RunComparison, RunSnapshotFile, QaSentinelOptions, FailureCluster, CIInfo, ThemeConfig, BrandingConfig, QualityGateResult, QualityGateRuleResult, QuarantineEntry } from '../types';
 import { formatDuration, escapeHtml, escapeJsString, sanitizeId } from '../utils';
 import { generateTrendChart } from './chart-generator';
 import { generateGroupedTests, generateTestCard, AttentionSets } from './card-generator';
@@ -23,7 +23,6 @@ export interface HtmlGeneratorData {
   historyRunSnapshots?: Record<string, RunSnapshotFile>;
   failureClusters?: FailureCluster[];
   ciInfo?: CIInfo;
-  licenseTier?: LicenseTier;
   outputBasename?: string;
   qualityGateResult?: QualityGateResult;
   quarantinedTestIds?: Set<string>;
@@ -156,7 +155,6 @@ function generateOverviewContent(
   qualityGateResult?: QualityGateResult,
   quarantineEntries?: QuarantineEntry[],
   quarantineThreshold?: number,
-  licenseTier?: LicenseTier,
 ): string {
   // Calculate deltas from comparison
   const prevPassed = comparison?.baselineRun.passed ?? passed;
@@ -267,7 +265,6 @@ function generateOverviewContent(
   ` : '';
 
   // Quality Gates card
-  const hasPro = licenseTier !== undefined && licenseTier !== 'community';
   const ruleLabels: Record<string, string> = {
     maxFailures: 'Max failures',
     minPassRate: 'Min pass rate',
@@ -301,20 +298,7 @@ function generateOverviewContent(
         </div>
       </div>
     </div>
-  ` : (!hasPro ? `
-    <div class="overview-section quality-gate-section">
-      <div class="quality-gate-card pro-feature-placeholder">
-        <div class="gate-header">
-          <div class="gate-title-row">
-            <span class="section-icon">&#x1F6A6;</span>
-            <span class="gate-title">Quality Gates</span>
-          </div>
-          <span class="premium-badge" style="font-size:9px;background:var(--accent-purple);color:#fff;padding:1px 5px;border-radius:3px;">Pro</span>
-        </div>
-        <div class="gate-placeholder-desc">Configure CI pass/fail rules for your test suite</div>
-      </div>
-    </div>
-  ` : '');
+  ` : '';
 
   // Quarantine card
   const quarantineCount = quarantineEntries?.length ?? 0;
@@ -340,20 +324,7 @@ function generateOverviewContent(
         </div>
       </div>
     </div>
-  ` : (!hasPro ? `
-    <div class="overview-section quarantine-section">
-      <div class="quarantine-card pro-feature-placeholder">
-        <div class="quarantine-header">
-          <div class="quarantine-title-row">
-            <span class="section-icon">&#x1F512;</span>
-            <span class="quarantine-title">Quarantine</span>
-          </div>
-          <span class="premium-badge" style="font-size:9px;background:var(--accent-purple);color:#fff;padding:1px 5px;border-radius:3px;">Pro</span>
-        </div>
-        <div class="quarantine-placeholder-desc">Auto-quarantine flaky tests above a threshold</div>
-      </div>
-    </div>
-  ` : '');
+  ` : '';
 
   return `
     <!-- Hero Stats Row -->
@@ -611,8 +582,6 @@ export function generateHtml(data: HtmlGeneratorData): string {
   const showGallery = options.enableGalleryView !== false;
   const showComparison = (options.enableComparison !== false && !!comparison);
   const cspSafe = options.cspSafe === true;
-  const licenseTier = data.licenseTier ?? 'community';
-  const hasPro = licenseTier !== 'community';
   const quarantinedTestIds = data.quarantinedTestIds;
   const quarantineCount = quarantinedTestIds?.size ?? 0;
   const outputBasename = data.outputBasename ?? 'smart-report';
@@ -762,7 +731,7 @@ ${reportSubtitle ? `            <span class="logo-subtitle">${escapeHtml(reportS
             <button class="export-menu-item" onclick="showSummaryExport()" role="menuitem">
               <span>📋</span> Summary Card
             </button>
-${hasPro ? `            <div class="export-menu-divider" style="height:1px;background:var(--border-subtle);margin:4px 0;"></div>
+            <div class="export-menu-divider" style="height:1px;background:var(--border-subtle);margin:4px 0;"></div>
 ${options.exportPdf ? `            <button class="export-menu-item" onclick="showPdfPicker()" role="menuitem">
               <span>📑</span> PDF Report
             </button>` : ''}
@@ -771,16 +740,7 @@ ${options.exportJson ? `            <a class="export-menu-item" href="${outputBa
             </a>` : ''}
 ${options.exportJunit ? `            <a class="export-menu-item" href="${outputBasename}-junit.xml" download role="menuitem" style="text-decoration:none;color:inherit;">
               <span>🏷️</span> JUnit XML
-            </a>` : ''}` : `            <div class="export-menu-divider" style="height:1px;background:var(--border-subtle);margin:4px 0;"></div>
-            <div class="export-menu-item export-premium-placeholder" style="opacity:0.4;cursor:default;pointer-events:none;">
-              <span>📑</span> PDF Report <span class="premium-badge" style="font-size:9px;background:var(--accent-purple);color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px;">Pro</span>
-            </div>
-            <div class="export-menu-item export-premium-placeholder" style="opacity:0.4;cursor:default;pointer-events:none;">
-              <span>📦</span> Full JSON Data <span class="premium-badge" style="font-size:9px;background:var(--accent-purple);color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px;">Pro</span>
-            </div>
-            <div class="export-menu-item export-premium-placeholder" style="opacity:0.4;cursor:default;pointer-events:none;">
-              <span>🏷️</span> JUnit XML <span class="premium-badge" style="font-size:9px;background:var(--accent-purple);color:#fff;padding:1px 5px;border-radius:3px;margin-left:4px;">Pro</span>
-            </div>`}
+            </a>` : ''}
           </div>
         </div>
         <div class="theme-dropdown" id="themeDropdown">
@@ -798,9 +758,7 @@ ${options.exportJunit ? `            <a class="export-menu-item" href="${outputB
             <button class="theme-menu-item" onclick="setTheme('dark')" role="menuitem" data-theme="dark">
               <span>🌙</span> Dark
             </button>
-${hasPro ? `            <div style="height:1px;background:var(--border-subtle);margin:4px 0;position:relative;">
-              <span style="position:absolute;right:4px;top:-8px;font-size:9px;background:var(--accent-purple);color:#fff;padding:1px 5px;border-radius:3px;">PRO</span>
-            </div>
+            <div style="height:1px;background:var(--border-subtle);margin:4px 0;"></div>
             <button class="theme-menu-item" onclick="setTheme('ocean')" role="menuitem" data-theme="ocean">
               <span>🌊</span> Ocean
             </button>
@@ -818,7 +776,7 @@ ${hasPro ? `            <div style="height:1px;background:var(--border-subtle);m
             </button>
             <button class="theme-menu-item" onclick="setTheme('rose')" role="menuitem" data-theme="rose">
               <span>🌹</span> Rose
-            </button>` : ''}
+            </button>
           </div>
         </div>
         <div class="timestamp">${new Date().toLocaleString()}</div>
@@ -998,7 +956,7 @@ ${quarantineCount > 0 ? `            <button class="filter-chip attention-quaran
           <h2 class="view-title">Overview</h2>
         </div>
         <div class="overview-content">
-          ${generateOverviewContent(results, comparison, failureClusters, passed, failed, skipped, flaky, slow, newTests, total, passRate, totalDuration, history, data.qualityGateResult, data.quarantineEntries, data.quarantineThreshold, licenseTier)}
+          ${generateOverviewContent(results, comparison, failureClusters, passed, failed, skipped, flaky, slow, newTests, total, passRate, totalDuration, history, data.qualityGateResult, data.quarantineEntries, data.quarantineThreshold)}
         </div>
       </section>
 
