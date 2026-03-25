@@ -46,3 +46,4 @@ python/playwright_smart_reporter_python/
 
 # Sentinel data store
 .sentinel/
+.worktrees/
