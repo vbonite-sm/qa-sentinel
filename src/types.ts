@@ -444,7 +444,7 @@ export interface SuiteStats {
 }
 
 // ============================================================================
-// Quality Gates (Pro)
+// Quality Gates
 // ============================================================================
 
 export interface QualityGateConfig {
@@ -469,7 +469,7 @@ export interface QualityGateResult {
 }
 
 // ============================================================================
-// Quarantine (Pro)
+// Quarantine
 // ============================================================================
 
 export interface QuarantineConfig {
