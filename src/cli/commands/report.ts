@@ -27,6 +27,7 @@ export async function runReport(root = process.cwd()): Promise<void> {
 
   process.stdout.write(`Opening report: ${reportPath}\n`)
 
-  const open = (await import('open')).default
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const open = ((await import('open' as any)) as any).default as (path: string) => Promise<void>
   await open(reportPath)
 }
