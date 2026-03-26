@@ -752,30 +752,36 @@ ${options.exportJunit ? `            <a class="export-menu-item" href="${outputB
             <button class="theme-menu-item" onclick="setTheme('system')" role="menuitem" data-theme="system">
               <span>💻</span> System
             </button>
-            <button class="theme-menu-item" onclick="setTheme('light')" role="menuitem" data-theme="light">
-              <span>☀️</span> Light
+            <button class="theme-menu-item" onclick="setTheme('sentinel')" role="menuitem" data-theme="sentinel">
+              <span>🌙</span> Sentinel
             </button>
             <button class="theme-menu-item" onclick="setTheme('dark')" role="menuitem" data-theme="dark">
               <span>🌙</span> Dark
+            </button>
+            <button class="theme-menu-item" onclick="setTheme('light')" role="menuitem" data-theme="light">
+              <span>☀️</span> Light
             </button>
             <div style="height:1px;background:var(--border-subtle);margin:4px 0;"></div>
             <button class="theme-menu-item" onclick="setTheme('ocean')" role="menuitem" data-theme="ocean">
               <span>🌊</span> Ocean
             </button>
-            <button class="theme-menu-item" onclick="setTheme('sunset')" role="menuitem" data-theme="sunset">
-              <span>🌅</span> Sunset
-            </button>
             <button class="theme-menu-item" onclick="setTheme('dracula')" role="menuitem" data-theme="dracula">
               <span>🧛</span> Dracula
             </button>
-            <button class="theme-menu-item" onclick="setTheme('cyberpunk')" role="menuitem" data-theme="cyberpunk">
-              <span>⚡</span> Cyberpunk
+            <button class="theme-menu-item" onclick="setTheme('nord')" role="menuitem" data-theme="nord">
+              <span>❄️</span> Nord
             </button>
-            <button class="theme-menu-item" onclick="setTheme('forest')" role="menuitem" data-theme="forest">
-              <span>🌲</span> Forest
+            <button class="theme-menu-item" onclick="setTheme('sunset')" role="menuitem" data-theme="sunset">
+              <span>🌅</span> Sunset
             </button>
             <button class="theme-menu-item" onclick="setTheme('rose')" role="menuitem" data-theme="rose">
-              <span>🌹</span> Rose
+              <span>🌸</span> Rose
+            </button>
+            <button class="theme-menu-item" onclick="setTheme('sage')" role="menuitem" data-theme="sage">
+              <span>🌿</span> Sage
+            </button>
+            <button class="theme-menu-item" onclick="setTheme('midnight')" role="menuitem" data-theme="midnight">
+              <span>⭐</span> Midnight
             </button>
           </div>
         </div>
@@ -1370,31 +1376,76 @@ ${highContrastOverride}${customOverrides}
     }
 
     /* Pro Theme: Cyberpunk */
-    :root[data-theme="cyberpunk"] {
-      --bg-primary: #0a0014;
-      --bg-secondary: #110022;
-      --bg-card: #1a0033;
-      --bg-card-hover: #220044;
-      --bg-sidebar: #08000f;
-      --border-subtle: #2d0055;
-      --border-glow: #4400aa;
-      --text-primary: #e0d0ff;
-      --text-secondary: #a080cc;
-      --text-muted: #6644aa;
-      --accent-green: #00ff9f;
-      --accent-green-dim: #00cc7f;
-      --accent-red: #ff0055;
-      --accent-red-dim: #cc0044;
-      --accent-yellow: #ffee00;
-      --accent-yellow-dim: #ccbb00;
-      --accent-blue: #00ccff;
-      --accent-blue-dim: #00aadd;
-      --accent-purple: #cc00ff;
-      --accent-orange: #ff6600;
+    :root[data-theme="sentinel"] {
+      --bg-primary: #0F172A;
+      --bg-secondary: #1E293B;
+      --bg-card: #1E293B;
+      --bg-card-hover: #243349;
+      --bg-sidebar: #0B1120;
+      --border-subtle: #334155;
+      --border-glow: #475569;
+      --text-primary: #F1F5F9;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --accent-green: #10B981;
+      --accent-green-dim: #059669;
+      --accent-red: #EF4444;
+      --accent-red-dim: #DC2626;
+      --accent-yellow: #F59E0B;
+      --accent-yellow-dim: #D97706;
+      --accent-blue: #3B82F6;
+      --accent-blue-dim: #2563EB;
+      --accent-purple: #8B5CF6;
+      --accent-orange: #F97316;
     }
 
-    /* Pro Theme: Forest */
-    :root[data-theme="forest"] {
+    :root[data-theme="nord"] {
+      --bg-primary: #2E3440;
+      --bg-secondary: #3B4252;
+      --bg-card: #3B4252;
+      --bg-card-hover: #434C5E;
+      --bg-sidebar: #242933;
+      --border-subtle: #4C566A;
+      --border-glow: #5E81AC;
+      --text-primary: #ECEFF4;
+      --text-secondary: #D8DEE9;
+      --text-muted: #B0BAC8;
+      --accent-green: #A3BE8C;
+      --accent-green-dim: #8FAD78;
+      --accent-red: #BF616A;
+      --accent-red-dim: #A8555D;
+      --accent-yellow: #EBCB8B;
+      --accent-yellow-dim: #D4B877;
+      --accent-blue: #81A1C1;
+      --accent-blue-dim: #5E81AC;
+      --accent-purple: #B48EAD;
+      --accent-orange: #D08770;
+    }
+
+    :root[data-theme="midnight"] {
+      --bg-primary: #0D0F1A;
+      --bg-secondary: #141726;
+      --bg-card: #141726;
+      --bg-card-hover: #1C2035;
+      --bg-sidebar: #080A12;
+      --border-subtle: #252A42;
+      --border-glow: #363D60;
+      --text-primary: #E8EAFF;
+      --text-secondary: #9BA3C8;
+      --text-muted: #6B7399;
+      --accent-green: #34D399;
+      --accent-green-dim: #10B981;
+      --accent-red: #F87171;
+      --accent-red-dim: #EF4444;
+      --accent-yellow: #FCD34D;
+      --accent-yellow-dim: #F59E0B;
+      --accent-blue: #818CF8;
+      --accent-blue-dim: #6366F1;
+      --accent-purple: #A78BFA;
+      --accent-orange: #FB923C;
+    }
+
+    :root[data-theme="sage"] {
       --bg-primary: #0c1a0e;
       --bg-secondary: #112416;
       --bg-card: #182e1c;
@@ -7760,23 +7811,29 @@ function generateScripts(
       }
     });
 
-    const themeConfig = {
-      system:    { icon: '💻', label: 'System',    attr: null },
-      light:     { icon: '☀️', label: 'Light',     attr: 'light' },
-      dark:      { icon: '🌙', label: 'Dark',      attr: 'dark' },
-      ocean:     { icon: '🌊', label: 'Ocean',     attr: 'ocean' },
-      sunset:    { icon: '🌅', label: 'Sunset',    attr: 'sunset' },
-      dracula:   { icon: '🧛', label: 'Dracula',   attr: 'dracula' },
-      cyberpunk: { icon: '⚡', label: 'Cyberpunk', attr: 'cyberpunk' },
-      forest:    { icon: '🌲', label: 'Forest',    attr: 'forest' },
-      rose:      { icon: '🌹', label: 'Rose',      attr: 'rose' },
-    };
+    const themeConfig = [
+      { key: 'system',   label: 'System',   icon: '💻', attr: null },
+      { key: 'sentinel', label: 'Sentinel', icon: '🌙', attr: 'sentinel' },
+      { key: 'dark',     label: 'Dark',     icon: '🌙', attr: 'dark' },
+      { key: 'light',    label: 'Light',    icon: '☀️', attr: 'light' },
+      { key: 'ocean',    label: 'Ocean',    icon: '🌊', attr: 'ocean' },
+      { key: 'dracula',  label: 'Dracula',  icon: '🧛', attr: 'dracula' },
+      { key: 'nord',     label: 'Nord',     icon: '❄️', attr: 'nord' },
+      { key: 'sunset',   label: 'Sunset',   icon: '🌅', attr: 'sunset' },
+      { key: 'rose',     label: 'Rose',     icon: '🌸', attr: 'rose' },
+      { key: 'sage',     label: 'Sage',     icon: '🌿', attr: 'sage' },
+      { key: 'midnight', label: 'Midnight', icon: '⭐', attr: 'midnight' },
+    ];
+
+    function getThemeCfg(key) {
+      return themeConfig.find(t => t.key === key) || themeConfig[0];
+    }
 
     function setTheme(theme) {
       const root = document.documentElement;
       const icon = document.getElementById('themeIcon');
       const label = document.getElementById('themeLabel');
-      const cfg = themeConfig[theme] || themeConfig.system;
+      const cfg = getThemeCfg(theme);
 
       document.querySelectorAll('.theme-menu-item').forEach(item => {
         item.classList.toggle('active', item.dataset.theme === theme);
@@ -7799,7 +7856,7 @@ function generateScripts(
       const saved = localStorage.getItem('theme') || 'system';
       const icon = document.getElementById('themeIcon');
       const label = document.getElementById('themeLabel');
-      const cfg = themeConfig[saved] || themeConfig.system;
+      const cfg = getThemeCfg(saved);
 
       document.querySelectorAll('.theme-menu-item').forEach(item => {
         item.classList.toggle('active', item.dataset.theme === saved);

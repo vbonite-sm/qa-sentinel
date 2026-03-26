@@ -352,6 +352,62 @@ describe('html-generator', () => {
       // Should use placeholder instead
       expect(testsJson).toContain('[base64-screenshot]');
     });
+
+    it('removes cyberpunk theme CSS', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).not.toContain('[data-theme="cyberpunk"]');
+    });
+
+    it('adds sentinel theme CSS block', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('[data-theme="sentinel"]');
+    });
+
+    it('adds nord theme CSS block', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('[data-theme="nord"]');
+    });
+
+    it('adds midnight theme CSS block', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('[data-theme="midnight"]');
+    });
+
+    it('renames forest to sage theme CSS', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('[data-theme="sage"]');
+      expect(html).not.toContain('[data-theme="forest"]');
+    });
   });
 });
 
