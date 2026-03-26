@@ -474,7 +474,7 @@ function generateOverviewContent(
       <div class="exec-stat-card">
         <div class="exec-stat-score">${passRate}%</div>
         <div class="exec-stat-label">Pass Rate</div>
-        ${comparison ? `<div class="exec-stat-delta">${passRate > Math.round((comparison.passRate ?? 0)) ? '↑' : passRate < Math.round((comparison.passRate ?? 0)) ? '↓' : '→'} vs last run</div>` : ''}
+        ${comparison ? `<div class="exec-stat-delta">${passRate > Math.round(comparison.baselineRun.passRate) ? '↑' : passRate < Math.round(comparison.baselineRun.passRate) ? '↓' : '→'} vs last run</div>` : ''}
       </div>
       <div class="exec-stat-card">
         <div class="exec-stat-score">${formatDuration(totalDuration)}</div>
