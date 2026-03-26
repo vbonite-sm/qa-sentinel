@@ -804,6 +804,66 @@ describe('comparison-generator', () => {
   });
 });
 
+describe('Task 8: card-generator.ts Emoji Removal', () => {
+  it('test cards contain no raw emoji characters', () => {
+    const test: TestResultData = {
+      testId: 'test-attach',
+      title: 'Test with attachments',
+      file: 'tests/attach.spec.ts',
+      status: 'failed',
+      duration: 1500,
+      retry: 0,
+      steps: [],
+      history: [],
+      attachments: {
+        screenshots: [],
+        videos: [],
+        traces: ['test.zip'],
+        custom: [
+          { name: 'screenshot', path: 'test.png', contentType: 'image/png' },
+          { name: 'video', path: 'test.webm', contentType: 'video/webm' },
+        ],
+      },
+      videoPath: 'test.webm',
+      error: 'Something failed',
+      aiSuggestion: 'Try again',
+      browser: 'chromium',
+      annotations: [{ type: 'flaky', description: 'Intermittent' }],
+    };
+    // Test card output (covers getAttachmentIcon, getBrowserIcon, getAnnotationIcon, trace viewer links)
+    const card = generateTestCard(test, true);
+    // Grouped output (covers file-group-name emoji)
+    const grouped = generateGroupedTests([test], true);
+
+    const combined = card + grouped;
+
+    // Verify specific emoji used in card-generator are gone
+    expect(combined).not.toContain('📄');
+    expect(combined).not.toContain('🔍');
+    expect(combined).not.toContain('📦');
+    expect(combined).not.toContain('🎬');
+    // Also verify other known card-generator emoji are gone
+    expect(combined).not.toContain('🖼️');
+    expect(combined).not.toContain('🌐');
+    expect(combined).not.toContain('🦊');
+    expect(combined).not.toContain('🧭');
+    expect(combined).not.toContain('🔷');
+    expect(combined).not.toContain('🖥️');
+    expect(combined).not.toContain('🐢');
+    expect(combined).not.toContain('🔧');
+    expect(combined).not.toContain('⏭️');
+    expect(combined).not.toContain('❌');
+    expect(combined).not.toContain('🐛');
+    expect(combined).not.toContain('🎲');
+    expect(combined).not.toContain('📝');
+    expect(combined).not.toContain('📌');
+    expect(combined).not.toContain('📎');
+    expect(combined).not.toContain('📋');
+    expect(combined).not.toContain('📑');
+    expect(combined).not.toContain('🔊');
+  });
+});
+
 describe('Task 7: Sidebar Polish + Cross-Mode Polish', () => {
   it('sidebar has horizontal progress bar, not SVG ring', () => {
     const html = generateHtml({
