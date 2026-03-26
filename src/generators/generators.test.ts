@@ -421,6 +421,36 @@ describe('html-generator', () => {
       expect(html).toContain('<svg xmlns="http://www.w3.org/2000/svg"');
       expect(html).toContain('class="icon"');
     });
+
+    it('topbar contains no raw emoji characters', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).not.toContain('☰');
+      expect(html).not.toContain('🔍');
+      expect(html).not.toContain('📥');
+      expect(html).not.toContain('📊');
+      expect(html).not.toContain('🧪');
+      expect(html).not.toContain('📈');
+      expect(html).not.toContain('⚖️');
+      expect(html).not.toContain('🖼️');
+    });
+
+    it('platform keyboard shortcut uses runtime detection not hardcoded symbol', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('navigator.platform');
+      expect(html).toContain('Ctrl+K');
+    });
   });
 });
 

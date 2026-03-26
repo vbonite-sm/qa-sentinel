@@ -156,6 +156,7 @@ function generateOverviewContent(
   quarantineEntries?: QuarantineEntry[],
   quarantineThreshold?: number,
 ): string {
+  const icons = generateIcons();
   // Calculate deltas from comparison
   const prevPassed = comparison?.baselineRun.passed ?? passed;
   const prevFailed = comparison?.baselineRun.failed ?? failed;
@@ -193,7 +194,7 @@ function generateOverviewContent(
   const clustersHtml = (failureClusters && failureClusters.length > 0) ? `
     <div class="overview-section">
       <div class="section-header">
-        <span class="section-icon">🔍</span>
+        <span class="section-icon">${icons['search']}</span>
         <span class="section-title">Failure Clusters</span>
       </div>
       <div class="failure-clusters-grid">
@@ -433,7 +434,7 @@ function generateOverviewContent(
           </div>
         ` : ''}
         <div class="insight-card clickable" onclick="switchView('tests')" title="View all tests">
-          <div class="insight-icon">📊</div>
+          <div class="insight-icon">${icons['layout-dashboard']}</div>
           <div class="insight-content">
             <div class="insight-label">Test Distribution</div>
             <div class="insight-mini-stats">
@@ -444,7 +445,7 @@ function generateOverviewContent(
           </div>
         </div>
         <div class="insight-card clickable" onclick="switchView('trends')" title="View trends">
-          <div class="insight-icon">📈</div>
+          <div class="insight-icon">${icons['trending-up']}</div>
           <div class="insight-content">
             <div class="insight-label">Pass Rate Trend</div>
             <div class="mini-sparkline">
@@ -760,76 +761,76 @@ ${reportSubtitle ? `            <span class="logo-subtitle">${escapeHtml(reportS
       </div>
       <div class="top-bar-right">
         <button class="search-trigger" onclick="openSearch()" title="Search (⌘K)" aria-label="Search tests">
-          <span class="search-icon-btn">🔍</span>
+          <span class="search-icon-btn">${icons['search']}</span>
           <span class="search-label">Search...</span>
-          <kbd class="search-kbd">⌘K</kbd>
+          <kbd class="search-kbd kbd-hint">⌘K</kbd>
         </button>
         <div class="export-dropdown" id="exportDropdown">
           <button class="top-bar-btn" onclick="toggleExportMenu()" title="Export" aria-haspopup="true" aria-expanded="false">
-            <span>📥</span>
+            <span>${icons['download']}</span>
             <span class="btn-label">Export</span>
           </button>
           <div class="export-menu" role="menu">
             <button class="export-menu-item" onclick="exportJSON()" role="menuitem">
-              <span>📄</span> JSON
+              <span>${icons['file-json']}</span> JSON
             </button>
             <button class="export-menu-item" onclick="exportCSV()" role="menuitem">
-              <span>📊</span> CSV
+              <span>${icons['file-spreadsheet']}</span> CSV
             </button>
             <button class="export-menu-item" onclick="showSummaryExport()" role="menuitem">
-              <span>📋</span> Summary Card
+              <span>${icons['clipboard-list']}</span> Summary Card
             </button>
             <div class="export-menu-divider" style="height:1px;background:var(--border-subtle);margin:4px 0;"></div>
 ${options.exportPdf ? `            <button class="export-menu-item" onclick="showPdfPicker()" role="menuitem">
-              <span>📑</span> PDF Report
+              <span>${icons['file-text']}</span> PDF Report
             </button>` : ''}
 ${options.exportJson ? `            <a class="export-menu-item" href="${outputBasename}-data.json" download role="menuitem" style="text-decoration:none;color:inherit;">
-              <span>📦</span> Full JSON Data
+              <span>${icons['file-json']}</span> Full JSON Data
             </a>` : ''}
 ${options.exportJunit ? `            <a class="export-menu-item" href="${outputBasename}-junit.xml" download role="menuitem" style="text-decoration:none;color:inherit;">
-              <span>🏷️</span> JUnit XML
+              <span>${icons['file-text']}</span> JUnit XML
             </a>` : ''}
           </div>
         </div>
         <div class="theme-dropdown" id="themeDropdown">
           <button class="theme-toggle" onclick="toggleThemeMenu()" title="Theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false">
-            <span class="theme-toggle-icon" id="themeIcon">🌙</span>
+            <span class="theme-toggle-icon" id="themeIcon">${icons['moon']}</span>
             <span class="theme-label" id="themeLabel">Dark</span>
           </button>
           <div class="theme-menu" role="menu">
             <button class="theme-menu-item" onclick="setTheme('system')" role="menuitem" data-theme="system">
-              <span>💻</span> System
+              <span>${icons['monitor']}</span> System
             </button>
             <button class="theme-menu-item" onclick="setTheme('sentinel')" role="menuitem" data-theme="sentinel">
-              <span>🌙</span> Sentinel
+              <span>${icons['moon']}</span> Sentinel
             </button>
             <button class="theme-menu-item" onclick="setTheme('dark')" role="menuitem" data-theme="dark">
-              <span>🌙</span> Dark
+              <span>${icons['moon']}</span> Dark
             </button>
             <button class="theme-menu-item" onclick="setTheme('light')" role="menuitem" data-theme="light">
-              <span>☀️</span> Light
+              <span>${icons['sun']}</span> Light
             </button>
             <div style="height:1px;background:var(--border-subtle);margin:4px 0;"></div>
             <button class="theme-menu-item" onclick="setTheme('ocean')" role="menuitem" data-theme="ocean">
-              <span>🌊</span> Ocean
+              <span>${icons['waves']}</span> Ocean
             </button>
             <button class="theme-menu-item" onclick="setTheme('dracula')" role="menuitem" data-theme="dracula">
-              <span>🧛</span> Dracula
+              <span>${icons['ghost']}</span> Dracula
             </button>
             <button class="theme-menu-item" onclick="setTheme('nord')" role="menuitem" data-theme="nord">
-              <span>❄️</span> Nord
+              <span>${icons['snowflake']}</span> Nord
             </button>
             <button class="theme-menu-item" onclick="setTheme('sunset')" role="menuitem" data-theme="sunset">
-              <span>🌅</span> Sunset
+              <span>${icons['sunset']}</span> Sunset
             </button>
             <button class="theme-menu-item" onclick="setTheme('rose')" role="menuitem" data-theme="rose">
-              <span>🌸</span> Rose
+              <span>${icons['flower-2']}</span> Rose
             </button>
             <button class="theme-menu-item" onclick="setTheme('sage')" role="menuitem" data-theme="sage">
-              <span>🌿</span> Sage
+              <span>${icons['leaf']}</span> Sage
             </button>
             <button class="theme-menu-item" onclick="setTheme('midnight')" role="menuitem" data-theme="midnight">
-              <span>⭐</span> Midnight
+              <span>${icons['star']}</span> Midnight
             </button>
           </div>
         </div>
@@ -890,27 +891,27 @@ ${options.exportJunit ? `            <a class="export-menu-item" href="${outputB
         <div class="nav-section-title" id="nav-section-label">Navigation</div>
         <div role="tablist" aria-labelledby="nav-section-label">
           <button class="nav-item active" data-view="overview" onclick="switchView('overview')" role="tab" aria-selected="true" aria-controls="view-overview">
-            <span class="nav-icon" aria-hidden="true">📊</span>
+            <span class="nav-icon" aria-hidden="true">${icons['layout-dashboard']}</span>
             <span class="nav-label">Overview</span>
           </button>
           <button class="nav-item" data-view="tests" onclick="switchView('tests')" role="tab" aria-selected="false" aria-controls="view-tests">
-            <span class="nav-icon" aria-hidden="true">🧪</span>
+            <span class="nav-icon" aria-hidden="true">${icons['flask-conical']}</span>
             <span class="nav-label">Tests</span>
             <span class="nav-badge" aria-label="${total} total tests">${total}</span>
           </button>
           <button class="nav-item" data-view="trends" onclick="switchView('trends')" role="tab" aria-selected="false" aria-controls="view-trends">
-            <span class="nav-icon" aria-hidden="true">📈</span>
+            <span class="nav-icon" aria-hidden="true">${icons['trending-up']}</span>
             <span class="nav-label">Trends</span>
           </button>
           ${showComparison ? `
           <button class="nav-item" data-view="comparison" onclick="switchView('comparison')" role="tab" aria-selected="false" aria-controls="view-comparison">
-            <span class="nav-icon" aria-hidden="true">⚖️</span>
+            <span class="nav-icon" aria-hidden="true">${icons['git-compare']}</span>
             <span class="nav-label">Comparison</span>
           </button>
           ` : ''}
           ${showGallery ? `
           <button class="nav-item" data-view="gallery" onclick="switchView('gallery')" role="tab" aria-selected="false" aria-controls="view-gallery">
-            <span class="nav-icon" aria-hidden="true">🖼️</span>
+            <span class="nav-icon" aria-hidden="true">${icons['images']}</span>
             <span class="nav-label">Gallery</span>
           </button>
           ` : ''}
@@ -1034,7 +1035,7 @@ ${quarantineCount > 0 ? `            <button class="filter-chip attention-quaran
             <div class="test-list-content">
               <!-- Empty state for no results -->
               <div class="empty-state" id="emptyState" style="display: none;">
-                <div class="empty-state-icon">🔍</div>
+                <div class="empty-state-icon">${icons['search']}</div>
                 <div class="empty-state-title">No tests found</div>
                 <div class="empty-state-message">No tests match your current filters. Try adjusting your search or filter criteria.</div>
                 <button class="empty-state-action" onclick="clearAllFilters()">Clear filters</button>
@@ -1096,7 +1097,7 @@ ${quarantineCount > 0 ? `            <button class="filter-chip attention-quaran
           <!-- Test Detail (Detail) -->
           <div class="test-detail-panel" id="test-detail-panel">
             <div class="detail-placeholder">
-              <div class="placeholder-icon">🧪</div>
+              <div class="placeholder-icon">${icons['flask-conical']}</div>
               <div class="placeholder-text">Select a test to view details</div>
               <div class="placeholder-hint">Click on any test in the list</div>
             </div>
@@ -1145,7 +1146,7 @@ ${quarantineCount > 0 ? `            <button class="filter-chip attention-quaran
     <div class="search-modal-backdrop" onclick="closeSearch()"></div>
     <div class="search-modal-content">
       <div class="search-modal-header">
-        <span class="search-modal-icon" aria-hidden="true">🔍</span>
+        <span class="search-modal-icon" aria-hidden="true">${icons['search']}</span>
         <label for="search-modal-input" class="visually-hidden" id="search-modal-title">Search tests</label>
         <input type="text" class="search-modal-input" id="search-modal-input" placeholder="Search tests..." oninput="handleSearchInput(this.value)" aria-describedby="search-modal-hint">
         <span id="search-modal-hint" class="visually-hidden">Press Escape to close</span>
@@ -6887,6 +6888,7 @@ function generateScripts(
   statsData: string,
   outputBasename: string
 ): string {
+  const icons = generateIcons();
   return `    const tests = ${testsJson};
     const pdfBasename = ${JSON.stringify(outputBasename)};
     const stats = ${statsData};
@@ -7860,17 +7862,17 @@ function generateScripts(
     });
 
     const themeConfig = [
-      { key: 'system',   label: 'System',   icon: '💻', attr: null },
-      { key: 'sentinel', label: 'Sentinel', icon: '🌙', attr: 'sentinel' },
-      { key: 'dark',     label: 'Dark',     icon: '🌙', attr: 'dark' },
-      { key: 'light',    label: 'Light',    icon: '☀️', attr: 'light' },
-      { key: 'ocean',    label: 'Ocean',    icon: '🌊', attr: 'ocean' },
-      { key: 'dracula',  label: 'Dracula',  icon: '🧛', attr: 'dracula' },
-      { key: 'nord',     label: 'Nord',     icon: '❄️', attr: 'nord' },
-      { key: 'sunset',   label: 'Sunset',   icon: '🌅', attr: 'sunset' },
-      { key: 'rose',     label: 'Rose',     icon: '🌸', attr: 'rose' },
-      { key: 'sage',     label: 'Sage',     icon: '🌿', attr: 'sage' },
-      { key: 'midnight', label: 'Midnight', icon: '⭐', attr: 'midnight' },
+      { key: 'system',   label: 'System',   icon: ${JSON.stringify(icons['monitor'])},  attr: null },
+      { key: 'sentinel', label: 'Sentinel', icon: ${JSON.stringify(icons['moon'])},     attr: 'sentinel' },
+      { key: 'dark',     label: 'Dark',     icon: ${JSON.stringify(icons['moon'])},     attr: 'dark' },
+      { key: 'light',    label: 'Light',    icon: ${JSON.stringify(icons['sun'])},      attr: 'light' },
+      { key: 'ocean',    label: 'Ocean',    icon: ${JSON.stringify(icons['waves'])},    attr: 'ocean' },
+      { key: 'dracula',  label: 'Dracula',  icon: ${JSON.stringify(icons['ghost'])},    attr: 'dracula' },
+      { key: 'nord',     label: 'Nord',     icon: ${JSON.stringify(icons['snowflake'])},attr: 'nord' },
+      { key: 'sunset',   label: 'Sunset',   icon: ${JSON.stringify(icons['sunset'])},   attr: 'sunset' },
+      { key: 'rose',     label: 'Rose',     icon: ${JSON.stringify(icons['flower-2'])}, attr: 'rose' },
+      { key: 'sage',     label: 'Sage',     icon: ${JSON.stringify(icons['leaf'])},     attr: 'sage' },
+      { key: 'midnight', label: 'Midnight', icon: ${JSON.stringify(icons['star'])},     attr: 'midnight' },
     ];
 
     function getThemeCfg(key) {
@@ -7892,7 +7894,7 @@ function generateScripts(
       } else {
         root.removeAttribute('data-theme');
       }
-      if (icon) icon.textContent = cfg.icon;
+      if (icon) { icon.textContent = ''; icon.insertAdjacentHTML('beforeend', cfg.icon); }
       if (label) label.textContent = cfg.label;
       localStorage.setItem('theme', theme);
       showToast(cfg.attr ? cfg.label + ' theme' : 'Using system theme', 'info');
@@ -7913,7 +7915,7 @@ function generateScripts(
       if (cfg.attr) {
         document.documentElement.setAttribute('data-theme', cfg.attr);
       }
-      if (icon) icon.textContent = cfg.icon;
+      if (icon) { icon.textContent = ''; icon.insertAdjacentHTML('beforeend', cfg.icon); }
       if (label) label.textContent = cfg.label;
     })();
 
@@ -8265,18 +8267,43 @@ ${includeComparison ? `    // Comparison functions\n${generateComparisonScript()
        KEYBOARD-DRIVEN NAVIGATION
     ============================================ */
     (function initKeyboardNav() {
-      // Create keyboard hints panel
+      const isMac = navigator.platform.includes('Mac');
+      const searchKey = isMac ? '\u2318K' : 'Ctrl+K';
+      const sidebarKey = isMac ? '\u2318B' : 'Ctrl+B';
+
+      // Update search button keyboard hint
+      document.querySelectorAll('.kbd-hint').forEach(function(el) {
+        el.textContent = searchKey;
+      });
+
+      // Create keyboard hints panel using DOM methods (no innerHTML)
+      function makeHintRow(label, keys) {
+        const row = document.createElement('div');
+        row.className = 'keyboard-hint-row';
+        const s = document.createElement('span');
+        s.textContent = label;
+        row.appendChild(s);
+        keys.forEach(function(k, i) {
+          if (i > 0) row.appendChild(document.createTextNode(' '));
+          const kbd = document.createElement('kbd');
+          kbd.textContent = k;
+          row.appendChild(kbd);
+        });
+        return row;
+      }
       const hints = document.createElement('div');
       hints.className = 'keyboard-hints';
-      hints.innerHTML = '<h4>Keyboard Shortcuts</h4>' +
-        '<div class="keyboard-hint-row"><span>Navigate tests</span><kbd>j</kbd> <kbd>k</kbd></div>' +
-        '<div class="keyboard-hint-row"><span>Next failure</span><kbd>f</kbd></div>' +
-        '<div class="keyboard-hint-row"><span>Next flaky</span><kbd>n</kbd></div>' +
-        '<div class="keyboard-hint-row"><span>Search</span><kbd>⌘K</kbd></div>' +
-        '<div class="keyboard-hint-row"><span>Toggle sidebar</span><kbd>⌘B</kbd></div>' +
-        '<div class="keyboard-hint-row"><span>Views (1-5)</span><kbd>1</kbd>-<kbd>5</kbd></div>' +
-        '<div class="keyboard-hint-row"><span>Show/hide hints</span><kbd>?</kbd></div>' +
-        '<div class="keyboard-hint-row"><span>Export summary</span><kbd>e</kbd></div>';
+      const h4 = document.createElement('h4');
+      h4.textContent = 'Keyboard Shortcuts';
+      hints.appendChild(h4);
+      hints.appendChild(makeHintRow('Navigate tests', ['j', 'k']));
+      hints.appendChild(makeHintRow('Next failure', ['f']));
+      hints.appendChild(makeHintRow('Next flaky', ['n']));
+      hints.appendChild(makeHintRow('Search', [searchKey]));
+      hints.appendChild(makeHintRow('Toggle sidebar', [sidebarKey]));
+      hints.appendChild(makeHintRow('Views (1-5)', ['1-5']));
+      hints.appendChild(makeHintRow('Show/hide hints', ['?']));
+      hints.appendChild(makeHintRow('Export summary', ['e']));
       document.body.appendChild(hints);
 
       function getVisibleTestItems() {

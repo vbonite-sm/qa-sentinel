@@ -22,11 +22,11 @@ export function generateTrendChart(data: ChartData): string {
     return `
       <div class="trend-section">
         <div class="trend-header">
-          <div class="trend-title">📊 Test Run Trends</div>
+          <div class="trend-title">Test Run Trends</div>
           <div class="trend-subtitle">Collecting data...</div>
         </div>
         <div class="trend-message">
-          <p>📈 <strong>Trends will appear after 2+ test runs.</strong></p>
+          <p><strong>Trends will appear after 2+ test runs.</strong></p>
           <p>Run your tests again to start seeing historical trends, pass rates, and performance patterns.</p>
           <p style="font-size: 0.85em; opacity: 0.7;">Make sure your <code>historyFile</code> option points to a persistent location.</p>
         </div>
@@ -234,7 +234,7 @@ export function generateTrendChart(data: ChartData): string {
     <div id="trends-section" class="trend-section collapsible-section">
       <div class="trend-header" onclick="toggleSection('trends-section')">
         <div style="display: flex; align-items: center;">
-          <div class="trend-title">📊 Test Run Trends</div>
+          <div class="trend-title">Test Run Trends</div>
           <span class="section-toggle">▼</span>
         </div>
         <div class="trend-subtitle">Last ${allSummaries.length} runs</div>
