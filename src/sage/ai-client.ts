@@ -37,9 +37,7 @@ export async function askClaude(
 ): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
-    const msg = 'qa-sentinel: ANTHROPIC_API_KEY is not set. Export it and retry.'
-    process.stderr.write(msg + '\n')
-    throw new Error(msg)
+    throw new Error('ANTHROPIC_API_KEY is not set. Export it and retry.')
   }
 
   const model = process.env.SENTINEL_AI_MODEL ?? DEFAULT_MODEL
