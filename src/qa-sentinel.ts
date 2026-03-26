@@ -24,6 +24,7 @@ import type {
   RunSnapshotFile,
   QualityGateResult,
   QuarantineFile,
+  FixtureData,
 } from './types';
 
 // ============================================================================
@@ -67,6 +68,10 @@ import { generateExecutivePdf, type PdfThemeName } from './generators/executive-
 import { formatDuration, stripAnsiCodes, sanitizeFilename, detectCIInfo } from './utils';
 import { buildPlaywrightStyleAiPrompt } from './ai/prompt-builder';
 import type { CIInfo } from './types';
+import * as crypto from 'node:crypto';
+import { analyzeSelector } from './agent/selector-analyzer';
+import { appendHealSuggestion } from './agent/heal-store';
+import { cleanupFixtureFiles } from './cli/sentinel-dir';
 
 // ============================================================================
 // Smart Reporter
@@ -445,6 +450,24 @@ class QaSentinel implements Reporter {
       // This is a newer attempt - replace the previous one
       this.resultsMap.set(testId, testData);
     }
+
+    // Sentinel Agent: read fixture file and generate heal suggestion on selector failure
+    if (this.isCLIMode && (result.status === 'failed' || result.status === 'timedOut')) {
+      const fixture = this.readFixtureData(test.title);
+      if (fixture?.selectorError && fixture.domSnapshot) {
+        const suggestion = analyzeSelector(fixture.selectorError, fixture.domSnapshot);
+        if (suggestion) {
+          suggestion.testId = testId;
+          suggestion.testTitle = test.title;
+          suggestion.filePath = path.resolve(test.location.file);
+          try {
+            appendHealSuggestion(suggestion);
+          } catch {
+            // Non-fatal
+          }
+        }
+      }
+    }
   }
 
   /**
@@ -456,6 +479,16 @@ class QaSentinel implements Reporter {
     // Convert resultsMap to array - this ensures we only have the final attempt for each test
     // This fixes Issue #17: retries no longer double-counted
     this.results = Array.from(this.resultsMap.values());
+
+    // Sentinel Agent: clean up ephemeral per-test fixture files
+    if (this.isCLIMode) {
+      const runId = process.env['SENTINEL_RUN_ID'] ?? 'unknown';
+      try {
+        cleanupFixtureFiles(runId);
+      } catch {
+        // Non-fatal
+      }
+    }
 
     // Get failure clusters
     const failureClusters = this.failureClusterer.clusterFailures(this.results);
@@ -792,6 +825,24 @@ class QaSentinel implements Reporter {
       return `↓ ${Math.round(Math.abs(diff) * 100)}% faster`;
     }
     return '→ Stable';
+  }
+
+  private readFixtureData(testTitle: string): FixtureData | null {
+    const runId = process.env['SENTINEL_RUN_ID'] ?? 'unknown';
+    const runDir = path.join(process.cwd(), '.sentinel', 'runs', runId);
+    if (!fs.existsSync(runDir)) return null;
+    const hash = crypto.createHash('sha1').update(testTitle).digest('hex').slice(0, 8);
+    const prefix = `${runId}-`;
+    const suffix = `-${hash}-fixture.json`;
+    try {
+      const files = fs.readdirSync(runDir);
+      const match = files.find(f => f.startsWith(prefix) && f.endsWith(suffix));
+      if (!match) return null;
+      const raw = fs.readFileSync(path.join(runDir, match), 'utf-8');
+      return JSON.parse(raw) as FixtureData;
+    } catch {
+      return null;
+    }
   }
 
 }
