@@ -99,7 +99,8 @@ describe('ScribeOrchestrator', () => {
     )
     const orch = new ScribeOrchestrator([], tmpDir)
     const runData = orch.buildRunData()
-    expect(runData.manifest.runId).toBe('run-read')
+    expect(runData).not.toBeNull()
+    expect(runData?.manifest.runId).toBe('run-read')
   })
 
   it('buildRunData returns null when last-run.json does not exist', () => {

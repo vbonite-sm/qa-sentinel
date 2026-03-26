@@ -5,7 +5,6 @@ import { runHeal } from '../cli/commands/heal'
 import { runAsk } from '../cli/commands/ask'
 import { runReport } from '../cli/commands/report'
 import { runStatus } from '../cli/commands/status'
-import { createStub } from '../cli/commands/stubs'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pkg = require('../../package.json') as { version: string }
@@ -52,7 +51,10 @@ program
 program
   .command('sync')
   .description('Push results to configured Scribe integration targets')
-  .action(createStub({ name: 'sync', requirement: 'Sentinel Scribe (Sub-project 4)' }))
+  .action(async () => {
+    const { runSync } = await import('../cli/commands/sync')
+    await runSync()
+  })
 
 program
   .command('status')
