@@ -52,7 +52,6 @@ function generateFileTree(results: TestResultData[]): string {
     const fileName = file.split(/[\\/]/).pop() || file;
     return `
       <div class="file-tree-item ${statusClass}" data-file="${escapeHtml(file)}" onclick="filterByFile('${escapeJsString(file)}')">
-        <span class="file-tree-icon">📄</span>
         <span class="file-tree-name" title="${escapeHtml(file)}">${escapeHtml(fileName)}</span>
         <span class="file-tree-stats">
           ${stats.passed > 0 ? `<span class="file-stat passed">${stats.passed}</span>` : ''}
@@ -889,18 +888,15 @@ ${options.exportJunit ? `            <a class="export-menu-item" href="${outputB
 
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-      <!-- Progress Ring -->
+      <!-- Progress Bar -->
       <div class="sidebar-progress">
-        <div class="progress-ring-container clickable" onclick="switchView('tests')" title="View all tests" role="button" tabindex="0">
-          <svg class="progress-ring" width="80" height="80">
-            <circle class="progress-ring-bg" cx="40" cy="40" r="34"/>
-            <circle class="progress-ring-fill" cx="40" cy="40" r="34"
-                    stroke-dasharray="213.6"
-                    stroke-dashoffset="${(213.6 - (213.6 * passRate) / 100).toFixed(1)}"/>
-          </svg>
-          <div class="progress-ring-value">${passRate}%</div>
+        <div class="sidebar-progress-bar-wrap">
+          <div class="sidebar-progress-bar" style="width: ${passRate}%"></div>
         </div>
-        <div class="progress-label">Pass Rate</div>
+        <div class="sidebar-progress-label">
+          <span class="sidebar-pass-rate">${passRate}%</span>
+          <span class="sidebar-test-count">${passed}/${total} passed</span>
+        </div>
       </div>
 
       <!-- Quick Stats -->
@@ -921,6 +917,7 @@ ${options.exportJunit ? `            <a class="export-menu-item" href="${outputB
 
       <!-- Navigation -->
       <nav class="sidebar-nav" aria-label="Main navigation">
+        <div class="sidebar-section-label">NAVIGATE</div>
         <div class="nav-section-title" id="nav-section-label">Navigation</div>
         <div role="tablist" aria-labelledby="nav-section-label">
           <button class="nav-item active" data-view="overview" onclick="switchView('overview')" role="tab" aria-selected="true" aria-controls="view-overview">
@@ -1600,7 +1597,6 @@ ${highContrastOverride}${customOverrides}
       background: var(--bg-primary);
       color: var(--text-primary);
       height: 100vh;
-      overflow: hidden;
       line-height: 1.5;
     }
 
@@ -1639,7 +1635,7 @@ ${highContrastOverride}${customOverrides}
       padding: 0 1rem;
       background: var(--bg-secondary);
       border-bottom: 1px solid var(--border-subtle);
-      z-index: 100;
+      z-index: 20;
     }
 
     .top-bar-left {
@@ -1837,66 +1833,49 @@ ${highContrastOverride}${customOverrides}
     }
 
     .sidebar-progress {
-      padding: 1.25rem;
-      text-align: center;
+      padding: 12px 16px;
       border-bottom: 1px solid var(--border-subtle);
       flex-shrink: 0;
     }
 
-    .progress-ring-container {
-      position: relative;
-      width: 80px;
-      height: 80px;
-      margin: 0 auto;
+    .sidebar-progress-bar-wrap {
+      height: 6px;
+      background: var(--border-subtle);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 6px;
     }
 
-    .progress-ring-container.clickable {
-      cursor: pointer;
-      transition: transform 0.2s, filter 0.2s;
+    .sidebar-progress-bar {
+      height: 100%;
+      background: var(--accent-green);
+      border-radius: 3px;
+      transition: width 0.3s ease;
     }
 
-    .progress-ring-container.clickable:hover {
-      transform: scale(1.05);
-      filter: brightness(1.1);
-    }
-
-    .progress-ring {
-      transform: rotate(-90deg);
-    }
-
-    .progress-ring-bg {
-      fill: none;
-      stroke: var(--border-subtle);
-      stroke-width: 6;
-    }
-
-    .progress-ring-fill {
-      fill: none;
-      stroke: var(--accent-green);
-      stroke-width: 6;
-      stroke-linecap: round;
-      transition: stroke-dashoffset 0.5s ease;
-      filter: drop-shadow(0 0 6px var(--accent-green));
-    }
-
-    .progress-ring-value {
-      position: absolute;
-      inset: 0;
+    .sidebar-progress-label {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: ${monoFont};
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--accent-green);
+      justify-content: space-between;
+      align-items: baseline;
     }
 
-    .progress-label {
-      font-size: 0.7rem;
+    .sidebar-pass-rate {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .sidebar-test-count {
+      font-size: 0.75rem;
       color: var(--text-muted);
-      margin-top: 0.5rem;
+    }
+
+    .sidebar-section-label {
+      font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
+      color: var(--text-muted);
+      padding: 12px 16px 4px;
     }
 
     .sidebar-stats {
@@ -2070,9 +2049,9 @@ ${highContrastOverride}${customOverrides}
     }
 
     .filter-chip.active {
-      background: var(--bg-card);
-      color: var(--accent-blue);
-      border-color: var(--accent-blue);
+      background: var(--accent-blue);
+      color: white;
+      border-color: transparent;
     }
 
     .grade-chips .filter-chip {
@@ -2162,8 +2141,9 @@ ${highContrastOverride}${customOverrides}
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.4rem 0.6rem;
+      padding: 0.4rem 0.6rem 0.4rem 10px;
       border-radius: 6px;
+      border-left: 3px solid var(--border-subtle);
       cursor: pointer;
       transition: all 0.2s;
       font-size: 0.8rem;
@@ -2189,6 +2169,8 @@ ${highContrastOverride}${customOverrides}
 
     .file-tree-item.has-failures .file-tree-name { color: var(--accent-red); }
     .file-tree-item.all-passed .file-tree-name { color: var(--text-secondary); }
+    .file-tree-item.has-failures { border-left-color: var(--accent-red); }
+    .file-tree-item.all-passed { border-left-color: var(--accent-green); }
 
     .file-tree-stats {
       display: flex;
@@ -2934,27 +2916,26 @@ ${highContrastOverride}${customOverrides}
     }
 
     .tab-btn {
-      font-size: 0.75rem;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      border: 1px solid transparent;
       background: transparent;
-      color: var(--text-muted);
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 8px 16px;
       cursor: pointer;
-      transition: all 0.2s;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
       font-family: inherit;
       font-weight: 500;
+      transition: border-color 0.15s, color 0.15s;
     }
 
     .tab-btn:hover {
-      background: var(--bg-card);
-      color: var(--text-secondary);
+      color: var(--text-primary);
     }
 
     .tab-btn.active {
-      background: var(--bg-card);
-      color: var(--accent-blue);
-      border-color: var(--accent-blue);
+      border-bottom-color: var(--accent-blue);
+      color: var(--text-primary);
+      background: transparent;
     }
 
     .test-list-search {
@@ -3000,10 +2981,16 @@ ${highContrastOverride}${customOverrides}
       margin-bottom: 0.25rem;
       background: var(--bg-card);
       border: 1px solid transparent;
+      border-left: 3px solid transparent;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s;
     }
+
+    .test-list-item[data-status="passed"] { border-left-color: var(--accent-green); }
+    .test-list-item[data-status="failed"] { border-left-color: var(--accent-red); }
+    .test-list-item[data-status="flaky"] { border-left-color: var(--accent-yellow); }
+    .test-list-item[data-status="skipped"] { border-left-color: var(--text-muted); }
 
     .test-list-item:hover {
       background: var(--bg-card-hover);
@@ -3309,7 +3296,7 @@ ${highContrastOverride}${customOverrides}
       display: none;
       position: fixed;
       inset: 0;
-      z-index: 1000;
+      z-index: 50;
       align-items: flex-start;
       justify-content: center;
       padding-top: 15vh;
@@ -3401,22 +3388,6 @@ ${highContrastOverride}${customOverrides}
       font-family: ${monoFont};
       font-size: 0.75rem;
       color: var(--text-muted);
-    }
-
-    /* ============================================
-       EXISTING STYLES (preserved from original)
-    ============================================ */
-
-    .progress-ring .value {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: ${monoFont};
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--accent-green);
     }
 
     /* Trend Chart - Pass Rate Over Time */
@@ -6096,7 +6067,7 @@ ${highContrastOverride}${customOverrides}
       position: fixed;
       bottom: 24px;
       right: 24px;
-      z-index: 10000;
+      z-index: 60;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -6181,7 +6152,7 @@ ${highContrastOverride}${customOverrides}
       border: 1px solid var(--border-glow);
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      z-index: 1000;
+      z-index: 30;
       min-width: 120px;
       opacity: 0;
       visibility: hidden;
@@ -6378,26 +6349,6 @@ ${highContrastOverride}${customOverrides}
         padding: 0.75rem;
       }
 
-      .progress-ring-container {
-        width: 60px;
-        height: 60px;
-      }
-
-      .progress-ring {
-        width: 60px;
-        height: 60px;
-      }
-
-      .progress-ring circle {
-        cx: 30;
-        cy: 30;
-        r: 25;
-      }
-
-      .progress-ring-value {
-        font-size: 0.9rem;
-      }
-
       .nav-item {
         padding: 0.5rem 0.6rem;
         font-size: 0.8rem;
@@ -6501,7 +6452,6 @@ ${highContrastOverride}${customOverrides}
         text-decoration: underline;
       }
 
-      .progress-ring,
       .trend-section,
       .gallery-section {
         break-inside: avoid;

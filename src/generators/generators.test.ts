@@ -803,3 +803,39 @@ describe('comparison-generator', () => {
     });
   });
 });
+
+describe('Task 7: Sidebar Polish + Cross-Mode Polish', () => {
+  it('sidebar has horizontal progress bar, not SVG ring', () => {
+    const html = generateHtml({
+      results: [
+        { testId: 'test-1', title: 'T1', file: 'a.spec.ts', status: 'passed', duration: 500, retry: 0, steps: [], history: [] },
+      ],
+      history: createTestHistory(),
+      startTime: Date.now(),
+      options: {},
+    });
+    expect(html).toContain('sidebar-progress-bar');
+    expect(html).not.toContain('progress-ring');
+  });
+
+  it('filter chip active state uses filled background style', () => {
+    const html = generateHtml({
+      results: [],
+      history: createTestHistory(),
+      startTime: Date.now(),
+      options: {},
+    });
+    expect(html).toContain('background: var(--accent-blue)');
+  });
+
+  it('body does not use overflow hidden', () => {
+    const html = generateHtml({
+      results: [],
+      history: createTestHistory(),
+      startTime: Date.now(),
+      options: {},
+    });
+    // Check body element rule does not include overflow hidden (use negative lookbehind to exclude -body selectors)
+    expect(html).not.toMatch(/(?<![-\w])body\s*\{[^}]*overflow:\s*hidden/);
+  });
+});
