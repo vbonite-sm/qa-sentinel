@@ -1274,7 +1274,7 @@ ${highContrastOverride}${customOverrides}
     }
 
     /* Manual light theme override */
-    [data-theme="light"] {
+    :root[data-theme="light"] {
       --bg-primary: #F8FAFC;
       --bg-secondary: #F1F5F9;
       --bg-card: #FFFFFF;
