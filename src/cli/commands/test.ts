@@ -3,6 +3,8 @@ import * as path from 'path'
 import * as fs from 'fs'
 import { generateRunId } from '../run-id'
 import { ensureSentinelDir, migrateHistory, writeLastRun } from '../sentinel-dir'
+import { loadConfig } from '../config-loader'
+import { applySeerFilter } from '../../seer/filter'
 import type { RunManifest } from '../../types'
 
 function findPlaywrightBin(root: string): string {
@@ -23,6 +25,24 @@ export async function runTest(
   ensureSentinelDir(root)
   migrateHistory(root)
 
+  // Extract Seer flags — must be stripped before passing args to Playwright
+  const hasPredict = playwrightArgs.includes('--predict')
+  const hasNoPredict = playwrightArgs.includes('--no-predict')
+  const filteredArgs = playwrightArgs.filter(
+    a => a !== '--predict' && a !== '--no-predict'
+  )
+
+  // Load config to check config-driven prediction and thresholds
+  const config = await loadConfig(root)
+  const shouldPredict = (hasPredict || config.seer?.predict === true) && !hasNoPredict
+
+  let effectiveArgs = filteredArgs
+  if (shouldPredict) {
+    const minConfidence = config.seer?.minConfidence ?? 0.8
+    const diffBase = config.seer?.diffBase ?? 'HEAD~1'
+    effectiveArgs = await applySeerFilter(filteredArgs, root, minConfidence, diffBase)
+  }
+
   const playwrightBin = findPlaywrightBin(root)
   const startMs = Date.now()
 
@@ -30,7 +50,7 @@ export async function runTest(
   const useShell = playwrightBin.endsWith('.cmd')
 
   return new Promise((resolve, reject) => {
-    const child = spawn(playwrightBin, ['test', ...playwrightArgs], {
+    const child = spawn(playwrightBin, ['test', ...effectiveArgs], {
       stdio: 'inherit',
       shell: useShell,
       env: {
