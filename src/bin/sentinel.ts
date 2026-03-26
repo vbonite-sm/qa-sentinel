@@ -2,6 +2,9 @@
 import { Command } from 'commander'
 import { runTest } from '../cli/commands/test'
 import { runHeal } from '../cli/commands/heal'
+import { runAsk } from '../cli/commands/ask'
+import { runReport } from '../cli/commands/report'
+import { runStatus } from '../cli/commands/status'
 import { createStub } from '../cli/commands/stubs'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -11,7 +14,7 @@ const program = new Command()
 
 program
   .name('sentinel')
-  .description('Sentinel — your intelligent QA assistant')
+  .description('Sentinel -- your intelligent QA assistant')
   .version(pkg.version)
   .enablePositionalOptions()
 
@@ -22,8 +25,6 @@ program
   .passThroughOptions()
   .argument('[args...]', 'Playwright CLI arguments passed through verbatim')
   .action(async function (this: Command) {
-    // `this.args` is the reliable way to get pass-through args with commander
-    // when using .passThroughOptions() + .allowUnknownOption()
     await runTest(this.args)
   })
 
@@ -37,12 +38,16 @@ program
 program
   .command('ask [query]')
   .description('Ask Sentinel a question about your test history')
-  .action(createStub({ name: 'ask', requirement: 'Sentinel Sage (Sub-project 3)' }))
+  .action(async (query?: string) => {
+    await runAsk(query)
+  })
 
 program
   .command('report')
   .description('Open the last generated HTML report')
-  .action(createStub({ name: 'report', requirement: 'Coming in Sub-project 3' }))
+  .action(async () => {
+    await runReport()
+  })
 
 program
   .command('sync')
@@ -52,6 +57,8 @@ program
 program
   .command('status')
   .description('Show test suite health grade and trend summary')
-  .action(createStub({ name: 'status', requirement: 'Coming in Sub-project 3' }))
+  .action(async () => {
+    await runStatus()
+  })
 
 program.parse(process.argv)
