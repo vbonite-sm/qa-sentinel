@@ -8,42 +8,22 @@ import { formatDuration, escapeHtml, sanitizeId, renderMarkdownLite } from '../u
 /**
  * Get appropriate icon for attachment content type
  */
-function getAttachmentIcon(contentType: string): string {
-  if (contentType.startsWith('image/')) return '🖼️';
-  if (contentType.startsWith('video/')) return '🎬';
-  if (contentType.startsWith('audio/')) return '🔊';
-  if (contentType.startsWith('text/')) return '📄';
-  if (contentType.includes('json')) return '📋';
-  if (contentType.includes('pdf')) return '📑';
-  if (contentType.includes('zip') || contentType.includes('tar') || contentType.includes('gzip')) return '📦';
-  return '📎';
+function getAttachmentIcon(_contentType: string): string {
+  return ''; // Icon removed — use CSS for visual differentiation
 }
 
 /**
  * Get browser icon based on browser name
  */
-function getBrowserIcon(browser: string): string {
-  const name = browser.toLowerCase();
-  if (name.includes('chromium') || name.includes('chrome')) return '🌐';
-  if (name.includes('firefox')) return '🦊';
-  if (name.includes('webkit') || name.includes('safari')) return '🧭';
-  if (name.includes('edge')) return '🔷';
-  return '🖥️';
+function getBrowserIcon(_browser: string): string {
+  return ''; // Browser name text label is sufficient
 }
 
 /**
  * Get annotation icon based on annotation type
  */
-function getAnnotationIcon(type: string): string {
-  const t = type.toLowerCase();
-  if (t === 'slow') return '🐢';
-  if (t === 'fixme' || t === 'fix') return '🔧';
-  if (t === 'skip') return '⏭️';
-  if (t === 'fail' || t === 'expected-failure') return '❌';
-  if (t === 'issue' || t === 'bug') return '🐛';
-  if (t === 'flaky') return '🎲';
-  if (t === 'todo') return '📝';
-  return '📌';
+function getAnnotationIcon(_type: string): string {
+  return ''; // Annotation type label is sufficient
 }
 
 /**
@@ -98,7 +78,7 @@ export function generateTestCard(test: TestResultData, showTraceSection: boolean
 
   // Generate browser badge display (for multi-browser setups)
   const browserHtml = test.browser
-    ? `<span class="test-browser-badge" title="Browser: ${escapeHtml(test.browser)}">${getBrowserIcon(test.browser)} ${escapeHtml(test.browser)}</span>`
+    ? `<span class="test-browser-badge" title="Browser: ${escapeHtml(test.browser)}">${escapeHtml(test.browser)}</span>`
     : '';
 
   // Generate project badge display (for multi-project setups)
@@ -113,7 +93,7 @@ export function generateTestCard(test: TestResultData, showTraceSection: boolean
         const title = a.description ? `${a.type}: ${escapeHtml(a.description)}` : a.type;
         // Normalize type to lowercase alphanumeric for CSS class (e.g., 'expected-failure' -> 'expected-failure')
         const cssType = a.type.toLowerCase().replace(/[^a-z0-9-]/g, '-');
-        return `<span class="test-annotation-badge annotation-${cssType}" title="${escapeHtml(title)}">${icon} ${escapeHtml(a.type)}</span>`;
+        return `<span class="test-annotation-badge annotation-${cssType}" title="${escapeHtml(title)}">${icon}${escapeHtml(a.type)}</span>`;
       }).join('')
     : '';
 
@@ -189,7 +169,7 @@ export function generateTestDetails(test: TestResultData, cardId: string, showTr
 
 	    historyDetails += `
 	      <div class="detail-section">
-	        <div class="detail-label"><span class="icon">📊</span> Run History (Last ${test.history.length} runs)</div>
+	        <div class="detail-label">Run History (Last ${test.history.length} runs)</div>
 	        <div class="history-section">
 	          <div class="history-column">
 	            <div class="history-label">Pass/Fail</div>
@@ -266,7 +246,7 @@ export function generateTestDetails(test: TestResultData, cardId: string, showTr
 
     bodyDetails += `
       <div class="detail-section">
-        <div class="detail-label"><span class="icon">⏱</span> Step Timeline</div>
+        <div class="detail-label">Step Timeline</div>
         <div class="step-timeline">${timelineBars}</div>
         <div class="step-timeline-legend">${legendHtml}</div>
         <div class="steps-container" style="margin-top: 8px;">
@@ -313,7 +293,7 @@ export function generateTestDetails(test: TestResultData, cardId: string, showTr
 
     bodyDetails += `
       <div class="detail-section">
-        <div class="detail-label"><span class="icon">⚠</span> Error</div>
+        <div class="detail-label">Error</div>
         ${diffHtml}
         <div class="error-box">${escapeHtml(test.error)}</div>
       </div>
@@ -327,7 +307,7 @@ export function generateTestDetails(test: TestResultData, cardId: string, showTr
   if (showTraceViewer) {
     bodyDetails += `
       <div class="detail-section">
-        <div class="detail-label"><span class="icon">📊</span> Trace</div>
+        <div class="detail-label">Trace</div>
         <div class="trace-list">
           ${tracePaths.map((trace, idx) => {
             const suffix = tracePaths.length > 1 ? ` #${idx + 1}` : '';
@@ -338,14 +318,13 @@ export function generateTestDetails(test: TestResultData, cardId: string, showTr
               <div class="trace-row">
                 <div class="trace-meta">
                   <div class="trace-file">
-                    <span class="trace-file-icon">📦</span>
                     <span class="trace-file-name" title="${safeTrace}">${fileName}${suffix}</span>
                   </div>
                   <div class="trace-path" title="${safeTrace}">${safeTrace}</div>
                 </div>
                 <div class="trace-actions">
-                  <a href="${safeTrace}" class="attachment-link" download>⬇ Download</a>
-                  <a href="#" class="attachment-link" data-trace="${safeTrace}" onclick="return viewTraceFromEl(this)">🔍 View</a>
+                  <a href="${safeTrace}" class="attachment-link" download>Download</a>
+                  <a href="#" class="attachment-link" data-trace="${safeTrace}" onclick="return viewTraceFromEl(this)">View</a>
                 </div>
               </div>
             `;
@@ -358,7 +337,7 @@ export function generateTestDetails(test: TestResultData, cardId: string, showTr
   if (test.screenshot) {
     bodyDetails += `
       <div class="detail-section">
-        <div class="detail-label"><span class="icon">📸</span> Screenshot</div>
+        <div class="detail-label">Screenshot</div>
         <div class="screenshot-box">
           <img src="${test.screenshot}" alt="Failure screenshot" onclick="window.open(this.src, '_blank')" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"/>
           <div class="screenshot-fallback" style="display:none;">
@@ -373,9 +352,9 @@ export function generateTestDetails(test: TestResultData, cardId: string, showTr
   if (test.videoPath) {
     bodyDetails += `
       <div class="detail-section">
-        <div class="detail-label"><span class="icon">📎</span> Attachments</div>
+        <div class="detail-label">Attachments</div>
         <div class="attachments">
-          <a href="file://${test.videoPath}" class="attachment-link" target="_blank">🎬 Video</a>
+          <a href="file://${test.videoPath}" class="attachment-link" target="_blank">Video</a>
         </div>
       </div>
     `;
@@ -384,20 +363,19 @@ export function generateTestDetails(test: TestResultData, cardId: string, showTr
   // Issue #15: Display custom attachments
   if (test.attachments?.custom && test.attachments.custom.length > 0) {
     const customAttachmentsList = test.attachments.custom.map(att => {
-      const icon = getAttachmentIcon(att.contentType);
       if (att.path) {
-        return `<a href="file://${escapeHtml(att.path)}" class="attachment-link" target="_blank">${icon} ${escapeHtml(att.name)}</a>`;
+        return `<a href="file://${escapeHtml(att.path)}" class="attachment-link" target="_blank">${escapeHtml(att.name)}</a>`;
       } else if (att.body) {
         // Inline content - create a download link
         const dataUri = `data:${att.contentType};base64,${att.body}`;
-        return `<a href="${dataUri}" class="attachment-link" download="${escapeHtml(att.name)}">${icon} ${escapeHtml(att.name)}</a>`;
+        return `<a href="${dataUri}" class="attachment-link" download="${escapeHtml(att.name)}">${escapeHtml(att.name)}</a>`;
       }
-      return `<span class="attachment-name">${icon} ${escapeHtml(att.name)}</span>`;
+      return `<span class="attachment-name">${escapeHtml(att.name)}</span>`;
     }).join('');
 
     bodyDetails += `
       <div class="detail-section">
-        <div class="detail-label"><span class="icon">📎</span> Custom Attachments</div>
+        <div class="detail-label">Custom Attachments</div>
         <div class="attachments">
           ${customAttachmentsList}
         </div>
@@ -408,7 +386,7 @@ export function generateTestDetails(test: TestResultData, cardId: string, showTr
   if (test.aiSuggestion) {
     bodyDetails += `
       <div class="detail-section">
-        <div class="detail-label"><span class="icon">🤖</span> AI Suggestion</div>
+        <div class="detail-label">AI Suggestion</div>
         <div class="ai-box ai-markdown">${renderMarkdownLite(test.aiSuggestion)}</div>
       </div>
     `;
@@ -522,7 +500,7 @@ export function generateGroupedTests(results: TestResultData[], showTraceSection
     <div id="group-${groupId}" class="file-group">
       <div class="file-group-header" onclick="toggleGroup('${groupId}')">
         <span class="expand-icon">▼</span>
-        <span class="file-group-name">📄 ${escapeHtml(file)}</span>
+        <span class="file-group-name">${escapeHtml(file)}</span>
         <div class="file-group-stats">
           ${passed > 0 ? `<span class="file-group-stat passed">${passed} passed</span>` : ''}
           ${failed > 0 ? `<span class="file-group-stat failed">${failed} failed</span>` : ''}
@@ -640,7 +618,7 @@ function generateNetworkLogsSection(networkLogs: NetworkLogData, cardId: string)
   return `
     <div class="detail-section network-logs-section">
       <div class="detail-label">
-        <span class="icon">🌐</span> Network Logs
+        Network Logs
         <span class="network-summary">
           ${totalRequests} requests
           ${errorCount > 0 ? `<span class="network-error-count">${errorCount} errors</span>` : ''}

@@ -52,7 +52,6 @@ function generateFileTree(results: TestResultData[]): string {
     const fileName = file.split(/[\\/]/).pop() || file;
     return `
       <div class="file-tree-item ${statusClass}" data-file="${escapeHtml(file)}" onclick="filterByFile('${escapeJsString(file)}')">
-        <span class="file-tree-icon">📄</span>
         <span class="file-tree-name" title="${escapeHtml(file)}">${escapeHtml(fileName)}</span>
         <span class="file-tree-stats">
           ${stats.passed > 0 ? `<span class="file-stat passed">${stats.passed}</span>` : ''}
@@ -156,6 +155,7 @@ function generateOverviewContent(
   quarantineEntries?: QuarantineEntry[],
   quarantineThreshold?: number,
 ): string {
+  const icons = generateIcons();
   // Calculate deltas from comparison
   const prevPassed = comparison?.baselineRun.passed ?? passed;
   const prevFailed = comparison?.baselineRun.failed ?? failed;
@@ -193,7 +193,7 @@ function generateOverviewContent(
   const clustersHtml = (failureClusters && failureClusters.length > 0) ? `
     <div class="overview-section">
       <div class="section-header">
-        <span class="section-icon">🔍</span>
+        <span class="section-icon">${icons['search']}</span>
         <span class="section-title">Failure Clusters</span>
       </div>
       <div class="failure-clusters-grid">
@@ -326,7 +326,10 @@ function generateOverviewContent(
     </div>
   ` : '';
 
-  return `
+  const healthVerdict = suiteHealthScore >= 80 ? 'Healthy' : suiteHealthScore >= 50 ? 'At Risk' : 'Critical';
+  const healthVerdictClass = suiteHealthScore >= 80 ? 'verdict-healthy' : suiteHealthScore >= 50 ? 'verdict-at-risk' : 'verdict-critical';
+
+  const existingContent = `
     <!-- Hero Stats Row -->
     <div class="hero-stats">
       <div class="hero-stat-card health ${healthClass}">
@@ -433,7 +436,7 @@ function generateOverviewContent(
           </div>
         ` : ''}
         <div class="insight-card clickable" onclick="switchView('tests')" title="View all tests">
-          <div class="insight-icon">📊</div>
+          <div class="insight-icon">${icons['layout-dashboard']}</div>
           <div class="insight-content">
             <div class="insight-label">Test Distribution</div>
             <div class="insight-mini-stats">
@@ -444,7 +447,7 @@ function generateOverviewContent(
           </div>
         </div>
         <div class="insight-card clickable" onclick="switchView('trends')" title="View trends">
-          <div class="insight-icon">📈</div>
+          <div class="insight-icon">${icons['trending-up']}</div>
           <div class="insight-content">
             <div class="insight-label">Pass Rate Trend</div>
             <div class="mini-sparkline">
@@ -459,6 +462,82 @@ function generateOverviewContent(
       </div>
     </div>
   `;
+
+  return `
+  <div class="executive-summary">
+    <div class="exec-stat-row">
+      <div class="exec-stat-card">
+        <div class="exec-stat-score ${healthVerdictClass}">${suiteHealthScore}</div>
+        <div class="exec-stat-label">Health Score</div>
+        <div class="exec-stat-verdict ${healthVerdictClass}">${healthVerdict}</div>
+      </div>
+      <div class="exec-stat-card">
+        <div class="exec-stat-score">${passRate}%</div>
+        <div class="exec-stat-label">Pass Rate</div>
+        ${comparison ? `<div class="exec-stat-delta">${passRate > Math.round((comparison.passRate ?? 0)) ? '↑' : passRate < Math.round((comparison.passRate ?? 0)) ? '↓' : '→'} vs last run</div>` : ''}
+      </div>
+      <div class="exec-stat-card">
+        <div class="exec-stat-score">${formatDuration(totalDuration)}</div>
+        <div class="exec-stat-label">Duration</div>
+        <div class="exec-stat-sublabel">${results.length} tests</div>
+      </div>
+      ${qualityGateResult ? `
+      <div class="exec-stat-card">
+        <div class="quality-gate-badge ${qualityGateResult.passed ? 'gate-pass' : 'gate-fail'}">${qualityGateResult.passed ? 'PASS' : 'FAIL'}</div>
+        <div class="exec-stat-label">Quality Gate</div>
+      </div>` : ''}
+    </div>
+  </div>
+  <div class="developer-detail">
+    ${existingContent}
+  </div>
+  `;
+}
+
+/**
+ * Generate inline Lucide SVG icon strings (v0.511.0)
+ */
+function generateIcons(): Record<string, string> {
+  const icon = (paths: string) =>
+    `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">${paths}</svg>`;
+
+  return {
+    'panel-left': icon('<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/>'),
+    'search': icon('<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>'),
+    'download': icon('<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>'),
+    'file-json': icon('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 12a1 1 0 0 0-1 1v1a1 1 0 0 1-1 1 1 1 0 0 1 1 1v1a1 1 0 0 0 1 1"/><path d="M14 18a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1 1 1 0 0 1-1-1v-1a1 1 0 0 0-1-1"/>'),
+    'file-spreadsheet': icon('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 13h2"/><path d="M14 13h2"/><path d="M8 17h2"/><path d="M14 17h2"/><path d="M8 9h8"/>'),
+    'file-text': icon('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/>'),
+    'clipboard-list': icon('<rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/>'),
+    'layout-dashboard': icon('<rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/>'),
+    'flask-conical': icon('<path d="M10 2v7.527a2 2 0 0 1-.211.896L4.72 20.55a1 1 0 0 0 .9 1.45h12.76a1 1 0 0 0 .9-1.45l-5.069-10.127A2 2 0 0 1 14 9.527V2"/><path d="M8.5 2h7"/><path d="M7 16h10"/>'),
+    'trending-up': icon('<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>'),
+    'git-compare': icon('<circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/>'),
+    'images': icon('<path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/>'),
+    'moon': icon('<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>'),
+    'sun': icon('<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>'),
+    'monitor': icon('<rect width="20" height="14" x="2" y="3" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/>'),
+    'waves': icon('<path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/>'),
+    'ghost': icon('<path d="M9 10h.01"/><path d="M15 10h.01"/><path d="M12 2a8 8 0 0 0-8 8v12l3-3 2.5 2.5L12 19l2.5 2.5L17 19l3 3V10a8 8 0 0 0-8-8z"/>'),
+    'snowflake': icon('<line x1="2" x2="22" y1="12" y2="12"/><line x1="12" x2="12" y1="2" y2="22"/><path d="m20 16-4-4 4-4"/><path d="m4 8 4 4-4 4"/><path d="m16 4-4 4-4-4"/><path d="m8 20 4-4 4 4"/>'),
+    'sunset': icon('<path d="M12 10V2"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m16 6-4 4-4-4"/><path d="M16 18a4 4 0 0 0-8 0"/>'),
+    'flower-2': icon('<path d="M12 5C9.8 5 8 6.8 8 9c0 1.4.7 2.6 1.8 3.4C8 13 7 14.8 7 16.8c0 2.5 2 4.5 4.5 4.5H13c2.5 0 4.5-2 4.5-4.5 0-2-.9-3.8-2.5-4.9.7-.5 1.3-1.2 1.6-2C17.3 8.3 16 6 14 5.2c-.6-.2-1.3-.3-2-.2z"/><path d="M12 8v8"/>'),
+    'leaf': icon('<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>'),
+    'star': icon('<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>'),
+    'clock': icon('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
+    'file-code': icon('<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m10 13-2 2 2 2"/><path d="m14 17 2-2-2-2"/>'),
+    'x': icon('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>'),
+    'circle-check': icon('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>'),
+    'circle-x': icon('<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>'),
+    'triangle-alert': icon('<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 22h16a2 2 0 0 0 1.73-4Z"/><path d="M12 9v4"/><path d="M12 17h.01"/>'),
+    'circle-minus': icon('<circle cx="12" cy="12" r="10"/><path d="M8 12h8"/>'),
+    'search-x': icon('<path d="m13.5 8.5-5 5"/><path d="m8.5 8.5 5 5"/><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>'),
+    'test-tube-diagonal': icon('<path d="M21 7 6.82 21.18a2.83 2.83 0 0 1-3.99-.01v0a2.83 2.83 0 0 1 0-4L17 3"/><path d="m16 2 6 6"/><path d="M12 16H4"/>'),
+    'shield-off': icon('<path d="M19.69 14a6.9 6.9 0 0 0 .31-2V5l-8-3-3.16 1.18"/><path d="m2 2 20 20"/><path d="M4.73 4.73 4 5v7c0 6 8 10 8 10a20.29 20.29 0 0 0 5.62-4.38"/>'),
+    'circle-alert': icon('<circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/>'),
+    'check-check': icon('<path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/>'),
+    'arrow-down-right': icon('<path d="m7 7 10 10"/><path d="M17 7v10H7"/>'),
+  };
 }
 
 /**
@@ -578,6 +657,8 @@ export function generateHtml(data: HtmlGeneratorData): string {
     .replace(/>/g, '\\u003e')
     .replace(/&/g, '\\u0026');
 
+  const icons = generateIcons();
+
   // Feature flags
   const showGallery = options.enableGalleryView !== false;
   const showComparison = (options.enableComparison !== false && !!comparison);
@@ -630,7 +711,7 @@ export function generateHtml(data: HtmlGeneratorData): string {
   const fontLinks = cspSafe ? '' : `
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">`;
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">`;
 
   // Stats data for JavaScript
   const statsData = JSON.stringify({ passed, failed, skipped, flaky, slow, newTests, total, passRate, gradeA, gradeB, gradeC, gradeD, gradeF, totalDuration });
@@ -680,7 +761,7 @@ export function generateHtml(data: HtmlGeneratorData): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Test Report</title>${fontLinks}
+  <title>${reportTitle}</title>${fontLinks}
   <style>
 ${generateStyles(passRate, cspSafe, options.theme)}
   </style>
@@ -695,7 +776,7 @@ ${generateStyles(passRate, cspSafe, options.theme)}
     <header class="top-bar">
       <div class="top-bar-left">
         <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar (⌘B)" aria-label="Toggle sidebar navigation" aria-expanded="true" aria-controls="sidebar">
-          <span class="hamburger-icon" aria-hidden="true">☰</span>
+          <span class="hamburger-icon" aria-hidden="true">${icons['panel-left']}</span>
         </button>
         <div class="logo">
 ${branding?.logo ? `          <img class="logo-image" src="${escapeHtml(branding.logo)}" alt="${escapeHtml(reportTitle)} logo" height="28" />` : ''}
@@ -711,71 +792,77 @@ ${reportSubtitle ? `            <span class="logo-subtitle">${escapeHtml(reportS
         </nav>
       </div>
       <div class="top-bar-right">
-        <button class="search-trigger" onclick="openSearch()" title="Search (⌘K)" aria-label="Search tests">
-          <span class="search-icon-btn">🔍</span>
+        <button class="search-trigger" onclick="openSearch()" title="Search" aria-label="Search tests">
+          <span class="search-icon-btn">${icons['search']}</span>
           <span class="search-label">Search...</span>
-          <kbd class="search-kbd">⌘K</kbd>
+          <kbd class="search-kbd kbd-hint">⌘K</kbd>
         </button>
         <div class="export-dropdown" id="exportDropdown">
           <button class="top-bar-btn" onclick="toggleExportMenu()" title="Export" aria-haspopup="true" aria-expanded="false">
-            <span>📥</span>
+            <span>${icons['download']}</span>
             <span class="btn-label">Export</span>
           </button>
           <div class="export-menu" role="menu">
             <button class="export-menu-item" onclick="exportJSON()" role="menuitem">
-              <span>📄</span> JSON
+              <span>${icons['file-json']}</span> JSON
             </button>
             <button class="export-menu-item" onclick="exportCSV()" role="menuitem">
-              <span>📊</span> CSV
+              <span>${icons['file-spreadsheet']}</span> CSV
             </button>
             <button class="export-menu-item" onclick="showSummaryExport()" role="menuitem">
-              <span>📋</span> Summary Card
+              <span>${icons['clipboard-list']}</span> Summary Card
             </button>
             <div class="export-menu-divider" style="height:1px;background:var(--border-subtle);margin:4px 0;"></div>
 ${options.exportPdf ? `            <button class="export-menu-item" onclick="showPdfPicker()" role="menuitem">
-              <span>📑</span> PDF Report
+              <span>${icons['file-text']}</span> PDF Report
             </button>` : ''}
 ${options.exportJson ? `            <a class="export-menu-item" href="${outputBasename}-data.json" download role="menuitem" style="text-decoration:none;color:inherit;">
-              <span>📦</span> Full JSON Data
+              <span>${icons['file-json']}</span> Full JSON Data
             </a>` : ''}
 ${options.exportJunit ? `            <a class="export-menu-item" href="${outputBasename}-junit.xml" download role="menuitem" style="text-decoration:none;color:inherit;">
-              <span>🏷️</span> JUnit XML
+              <span>${icons['file-text']}</span> JUnit XML
             </a>` : ''}
           </div>
         </div>
         <div class="theme-dropdown" id="themeDropdown">
           <button class="theme-toggle" onclick="toggleThemeMenu()" title="Theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false">
-            <span class="theme-toggle-icon" id="themeIcon">🌙</span>
+            <span class="theme-toggle-icon" id="themeIcon">${icons['moon']}</span>
             <span class="theme-label" id="themeLabel">Dark</span>
           </button>
           <div class="theme-menu" role="menu">
             <button class="theme-menu-item" onclick="setTheme('system')" role="menuitem" data-theme="system">
-              <span>💻</span> System
+              <span>${icons['monitor']}</span> System
             </button>
-            <button class="theme-menu-item" onclick="setTheme('light')" role="menuitem" data-theme="light">
-              <span>☀️</span> Light
+            <button class="theme-menu-item" onclick="setTheme('sentinel')" role="menuitem" data-theme="sentinel">
+              <span>${icons['moon']}</span> Sentinel
             </button>
             <button class="theme-menu-item" onclick="setTheme('dark')" role="menuitem" data-theme="dark">
-              <span>🌙</span> Dark
+              <span>${icons['moon']}</span> Dark
+            </button>
+            <button class="theme-menu-item" onclick="setTheme('light')" role="menuitem" data-theme="light">
+              <span>${icons['sun']}</span> Light
             </button>
             <div style="height:1px;background:var(--border-subtle);margin:4px 0;"></div>
             <button class="theme-menu-item" onclick="setTheme('ocean')" role="menuitem" data-theme="ocean">
-              <span>🌊</span> Ocean
-            </button>
-            <button class="theme-menu-item" onclick="setTheme('sunset')" role="menuitem" data-theme="sunset">
-              <span>🌅</span> Sunset
+              <span>${icons['waves']}</span> Ocean
             </button>
             <button class="theme-menu-item" onclick="setTheme('dracula')" role="menuitem" data-theme="dracula">
-              <span>🧛</span> Dracula
+              <span>${icons['ghost']}</span> Dracula
             </button>
-            <button class="theme-menu-item" onclick="setTheme('cyberpunk')" role="menuitem" data-theme="cyberpunk">
-              <span>⚡</span> Cyberpunk
+            <button class="theme-menu-item" onclick="setTheme('nord')" role="menuitem" data-theme="nord">
+              <span>${icons['snowflake']}</span> Nord
             </button>
-            <button class="theme-menu-item" onclick="setTheme('forest')" role="menuitem" data-theme="forest">
-              <span>🌲</span> Forest
+            <button class="theme-menu-item" onclick="setTheme('sunset')" role="menuitem" data-theme="sunset">
+              <span>${icons['sunset']}</span> Sunset
             </button>
             <button class="theme-menu-item" onclick="setTheme('rose')" role="menuitem" data-theme="rose">
-              <span>🌹</span> Rose
+              <span>${icons['flower-2']}</span> Rose
+            </button>
+            <button class="theme-menu-item" onclick="setTheme('sage')" role="menuitem" data-theme="sage">
+              <span>${icons['leaf']}</span> Sage
+            </button>
+            <button class="theme-menu-item" onclick="setTheme('midnight')" role="menuitem" data-theme="midnight">
+              <span>${icons['star']}</span> Midnight
             </button>
           </div>
         </div>
@@ -801,18 +888,15 @@ ${options.exportJunit ? `            <a class="export-menu-item" href="${outputB
 
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-      <!-- Progress Ring -->
+      <!-- Progress Bar -->
       <div class="sidebar-progress">
-        <div class="progress-ring-container clickable" onclick="switchView('tests')" title="View all tests" role="button" tabindex="0">
-          <svg class="progress-ring" width="80" height="80">
-            <circle class="progress-ring-bg" cx="40" cy="40" r="34"/>
-            <circle class="progress-ring-fill" cx="40" cy="40" r="34"
-                    stroke-dasharray="213.6"
-                    stroke-dashoffset="${(213.6 - (213.6 * passRate) / 100).toFixed(1)}"/>
-          </svg>
-          <div class="progress-ring-value">${passRate}%</div>
+        <div class="sidebar-progress-bar-wrap">
+          <div class="sidebar-progress-bar" style="width: ${passRate}%"></div>
         </div>
-        <div class="progress-label">Pass Rate</div>
+        <div class="sidebar-progress-label">
+          <span class="sidebar-pass-rate">${passRate}%</span>
+          <span class="sidebar-test-count">${passed}/${total} passed</span>
+        </div>
       </div>
 
       <!-- Quick Stats -->
@@ -833,30 +917,31 @@ ${options.exportJunit ? `            <a class="export-menu-item" href="${outputB
 
       <!-- Navigation -->
       <nav class="sidebar-nav" aria-label="Main navigation">
+        <div class="sidebar-section-label">NAVIGATE</div>
         <div class="nav-section-title" id="nav-section-label">Navigation</div>
         <div role="tablist" aria-labelledby="nav-section-label">
           <button class="nav-item active" data-view="overview" onclick="switchView('overview')" role="tab" aria-selected="true" aria-controls="view-overview">
-            <span class="nav-icon" aria-hidden="true">📊</span>
+            <span class="nav-icon" aria-hidden="true">${icons['layout-dashboard']}</span>
             <span class="nav-label">Overview</span>
           </button>
           <button class="nav-item" data-view="tests" onclick="switchView('tests')" role="tab" aria-selected="false" aria-controls="view-tests">
-            <span class="nav-icon" aria-hidden="true">🧪</span>
+            <span class="nav-icon" aria-hidden="true">${icons['flask-conical']}</span>
             <span class="nav-label">Tests</span>
             <span class="nav-badge" aria-label="${total} total tests">${total}</span>
           </button>
           <button class="nav-item" data-view="trends" onclick="switchView('trends')" role="tab" aria-selected="false" aria-controls="view-trends">
-            <span class="nav-icon" aria-hidden="true">📈</span>
+            <span class="nav-icon" aria-hidden="true">${icons['trending-up']}</span>
             <span class="nav-label">Trends</span>
           </button>
           ${showComparison ? `
           <button class="nav-item" data-view="comparison" onclick="switchView('comparison')" role="tab" aria-selected="false" aria-controls="view-comparison">
-            <span class="nav-icon" aria-hidden="true">⚖️</span>
+            <span class="nav-icon" aria-hidden="true">${icons['git-compare']}</span>
             <span class="nav-label">Comparison</span>
           </button>
           ` : ''}
           ${showGallery ? `
           <button class="nav-item" data-view="gallery" onclick="switchView('gallery')" role="tab" aria-selected="false" aria-controls="view-gallery">
-            <span class="nav-icon" aria-hidden="true">🖼️</span>
+            <span class="nav-icon" aria-hidden="true">${icons['images']}</span>
             <span class="nav-label">Gallery</span>
           </button>
           ` : ''}
@@ -980,7 +1065,7 @@ ${quarantineCount > 0 ? `            <button class="filter-chip attention-quaran
             <div class="test-list-content">
               <!-- Empty state for no results -->
               <div class="empty-state" id="emptyState" style="display: none;">
-                <div class="empty-state-icon">🔍</div>
+                <div class="empty-state-icon">${icons['search']}</div>
                 <div class="empty-state-title">No tests found</div>
                 <div class="empty-state-message">No tests match your current filters. Try adjusting your search or filter criteria.</div>
                 <button class="empty-state-action" onclick="clearAllFilters()">Clear filters</button>
@@ -1042,7 +1127,7 @@ ${quarantineCount > 0 ? `            <button class="filter-chip attention-quaran
           <!-- Test Detail (Detail) -->
           <div class="test-detail-panel" id="test-detail-panel">
             <div class="detail-placeholder">
-              <div class="placeholder-icon">🧪</div>
+              <div class="placeholder-icon">${icons['flask-conical']}</div>
               <div class="placeholder-text">Select a test to view details</div>
               <div class="placeholder-hint">Click on any test in the list</div>
             </div>
@@ -1091,7 +1176,7 @@ ${quarantineCount > 0 ? `            <button class="filter-chip attention-quaran
     <div class="search-modal-backdrop" onclick="closeSearch()"></div>
     <div class="search-modal-content">
       <div class="search-modal-header">
-        <span class="search-modal-icon" aria-hidden="true">🔍</span>
+        <span class="search-modal-icon" aria-hidden="true">${icons['search']}</span>
         <label for="search-modal-input" class="visually-hidden" id="search-modal-title">Search tests</label>
         <input type="text" class="search-modal-input" id="search-modal-input" placeholder="Search tests..." oninput="handleSearchInput(this.value)" aria-describedby="search-modal-hint">
         <span id="search-modal-hint" class="visually-hidden">Press Escape to close</span>
@@ -1188,7 +1273,7 @@ function generateStyles(passRate: number, cspSafe: boolean = false, theme?: Them
   // Font families - use system fonts in CSP-safe mode
   const primaryFont = cspSafe
     ? "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
-    : "'Space Grotesk', system-ui, sans-serif";
+    : "'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
   const monoFont = cspSafe
     ? "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace"
     : "'JetBrains Mono', ui-monospace, monospace";
@@ -1198,26 +1283,26 @@ function generateStyles(passRate: number, cspSafe: boolean = false, theme?: Them
   const customOverrides = theme?.preset !== 'high-contrast' ? generateThemeOverrides(theme) : '';
 
   return `    :root {
-      --bg-primary: #0a0a0f;
-      --bg-secondary: #12121a;
-      --bg-card: #1a1a24;
-      --bg-card-hover: #22222e;
-      --bg-sidebar: #0d0d14;
-      --border-subtle: #2a2a3a;
-      --border-glow: #3b3b4f;
-      --text-primary: #f0f0f5;
-      --text-secondary: #8888a0;
-      --text-muted: #5a5a70;
-      --accent-green: #00ff88;
-      --accent-green-dim: #00cc6a;
-      --accent-red: #ff4466;
-      --accent-red-dim: #cc3355;
-      --accent-yellow: #ffcc00;
-      --accent-yellow-dim: #ccaa00;
-      --accent-blue: #00aaff;
-      --accent-blue-dim: #0088cc;
-      --accent-purple: #aa66ff;
-      --accent-orange: #ff8844;
+      --bg-primary: #0F172A;
+      --bg-secondary: #1E293B;
+      --bg-card: #1E293B;
+      --bg-card-hover: #243349;
+      --bg-sidebar: #0B1120;
+      --border-subtle: #334155;
+      --border-glow: #475569;
+      --text-primary: #F1F5F9;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --accent-green: #10B981;
+      --accent-green-dim: #059669;
+      --accent-red: #EF4444;
+      --accent-red-dim: #DC2626;
+      --accent-yellow: #F59E0B;
+      --accent-yellow-dim: #D97706;
+      --accent-blue: #3B82F6;
+      --accent-blue-dim: #2563EB;
+      --accent-purple: #8B5CF6;
+      --accent-orange: #F97316;
       --sidebar-width: 260px;
       --topbar-height: 56px;
     }
@@ -1226,75 +1311,75 @@ ${highContrastOverride}${customOverrides}
     /* Light theme - respects system preference */
     @media (prefers-color-scheme: light) {
       :root:not([data-theme="dark"]) {
-        --bg-primary: #f5f5f7;
-        --bg-secondary: #ffffff;
-        --bg-card: #ffffff;
-        --bg-card-hover: #f0f0f2;
-        --bg-sidebar: #fafafa;
-        --border-subtle: #e0e0e5;
-        --border-glow: #d0d0d8;
-        --text-primary: #1a1a1f;
-        --text-secondary: #5a5a6e;
-        --text-muted: #8a8a9a;
-        --accent-green: #00aa55;
-        --accent-green-dim: #008844;
-        --accent-red: #dd3344;
-        --accent-red-dim: #bb2233;
-        --accent-yellow: #cc9900;
-        --accent-yellow-dim: #aa7700;
-        --accent-blue: #0077cc;
-        --accent-blue-dim: #005599;
-        --accent-purple: #8844cc;
-        --accent-orange: #dd6622;
+        --bg-primary: #F8FAFC;
+        --bg-secondary: #F1F5F9;
+        --bg-card: #FFFFFF;
+        --bg-card-hover: #F8FAFC;
+        --bg-sidebar: #F1F5F9;
+        --border-subtle: #CBD5E1;
+        --border-glow: #94A3B8;
+        --text-primary: #0F172A;
+        --text-secondary: #475569;
+        --text-muted: #64748B;
+        --accent-green: #059669;
+        --accent-red: #DC2626;
+        --accent-yellow: #D97706;
+        --accent-blue: #2563EB;
+        --accent-green-dim: #047857;
+        --accent-red-dim: #B91C1C;
+        --accent-yellow-dim: #B45309;
+        --accent-blue-dim: #1D4ED8;
+        --accent-purple: #7C3AED;
+        --accent-orange: #EA580C;
       }
     }
 
     /* Manual dark theme override */
     :root[data-theme="dark"] {
-      --bg-primary: #0a0a0f;
-      --bg-secondary: #12121a;
-      --bg-card: #1a1a24;
-      --bg-card-hover: #22222e;
-      --bg-sidebar: #0d0d14;
-      --border-subtle: #2a2a3a;
-      --border-glow: #3b3b4f;
-      --text-primary: #f0f0f5;
-      --text-secondary: #8888a0;
-      --text-muted: #5a5a70;
-      --accent-green: #00ff88;
-      --accent-green-dim: #00cc6a;
-      --accent-red: #ff4466;
-      --accent-red-dim: #cc3355;
-      --accent-yellow: #ffcc00;
-      --accent-yellow-dim: #ccaa00;
-      --accent-blue: #00aaff;
-      --accent-blue-dim: #0088cc;
-      --accent-purple: #aa66ff;
-      --accent-orange: #ff8844;
+      --bg-primary: #0F172A;
+      --bg-secondary: #1E293B;
+      --bg-card: #1E293B;
+      --bg-card-hover: #243349;
+      --bg-sidebar: #0B1120;
+      --border-subtle: #334155;
+      --border-glow: #475569;
+      --text-primary: #F1F5F9;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --accent-green: #10B981;
+      --accent-green-dim: #059669;
+      --accent-red: #EF4444;
+      --accent-red-dim: #DC2626;
+      --accent-yellow: #F59E0B;
+      --accent-yellow-dim: #D97706;
+      --accent-blue: #3B82F6;
+      --accent-blue-dim: #2563EB;
+      --accent-purple: #8B5CF6;
+      --accent-orange: #F97316;
     }
 
     /* Manual light theme override */
     :root[data-theme="light"] {
-      --bg-primary: #f5f5f7;
-      --bg-secondary: #ffffff;
-      --bg-card: #ffffff;
-      --bg-card-hover: #f0f0f2;
-      --bg-sidebar: #fafafa;
-      --border-subtle: #e0e0e5;
-      --border-glow: #d0d0d8;
-      --text-primary: #1a1a1f;
-      --text-secondary: #5a5a6e;
-      --text-muted: #8a8a9a;
-      --accent-green: #00aa55;
-      --accent-green-dim: #008844;
-      --accent-red: #dd3344;
-      --accent-red-dim: #bb2233;
-      --accent-yellow: #cc9900;
-      --accent-yellow-dim: #aa7700;
-      --accent-blue: #0077cc;
-      --accent-blue-dim: #005599;
-      --accent-purple: #8844cc;
-      --accent-orange: #dd6622;
+      --bg-primary: #F8FAFC;
+      --bg-secondary: #F1F5F9;
+      --bg-card: #FFFFFF;
+      --bg-card-hover: #F8FAFC;
+      --bg-sidebar: #F1F5F9;
+      --border-subtle: #CBD5E1;
+      --border-glow: #94A3B8;
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --text-muted: #64748B;
+      --accent-green: #059669;
+      --accent-red: #DC2626;
+      --accent-yellow: #D97706;
+      --accent-blue: #2563EB;
+      --accent-green-dim: #047857;
+      --accent-red-dim: #B91C1C;
+      --accent-yellow-dim: #B45309;
+      --accent-blue-dim: #1D4ED8;
+      --accent-purple: #7C3AED;
+      --accent-orange: #EA580C;
     }
 
     /* Pro Theme: Ocean */
@@ -1370,31 +1455,76 @@ ${highContrastOverride}${customOverrides}
     }
 
     /* Pro Theme: Cyberpunk */
-    :root[data-theme="cyberpunk"] {
-      --bg-primary: #0a0014;
-      --bg-secondary: #110022;
-      --bg-card: #1a0033;
-      --bg-card-hover: #220044;
-      --bg-sidebar: #08000f;
-      --border-subtle: #2d0055;
-      --border-glow: #4400aa;
-      --text-primary: #e0d0ff;
-      --text-secondary: #a080cc;
-      --text-muted: #6644aa;
-      --accent-green: #00ff9f;
-      --accent-green-dim: #00cc7f;
-      --accent-red: #ff0055;
-      --accent-red-dim: #cc0044;
-      --accent-yellow: #ffee00;
-      --accent-yellow-dim: #ccbb00;
-      --accent-blue: #00ccff;
-      --accent-blue-dim: #00aadd;
-      --accent-purple: #cc00ff;
-      --accent-orange: #ff6600;
+    :root[data-theme="sentinel"] {
+      --bg-primary: #0F172A;
+      --bg-secondary: #1E293B;
+      --bg-card: #1E293B;
+      --bg-card-hover: #243349;
+      --bg-sidebar: #0B1120;
+      --border-subtle: #334155;
+      --border-glow: #475569;
+      --text-primary: #F1F5F9;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+      --accent-green: #10B981;
+      --accent-green-dim: #059669;
+      --accent-red: #EF4444;
+      --accent-red-dim: #DC2626;
+      --accent-yellow: #F59E0B;
+      --accent-yellow-dim: #D97706;
+      --accent-blue: #3B82F6;
+      --accent-blue-dim: #2563EB;
+      --accent-purple: #8B5CF6;
+      --accent-orange: #F97316;
     }
 
-    /* Pro Theme: Forest */
-    :root[data-theme="forest"] {
+    :root[data-theme="nord"] {
+      --bg-primary: #2E3440;
+      --bg-secondary: #3B4252;
+      --bg-card: #3B4252;
+      --bg-card-hover: #434C5E;
+      --bg-sidebar: #242933;
+      --border-subtle: #4C566A;
+      --border-glow: #5E81AC;
+      --text-primary: #ECEFF4;
+      --text-secondary: #D8DEE9;
+      --text-muted: #B0BAC8;
+      --accent-green: #A3BE8C;
+      --accent-green-dim: #8FAD78;
+      --accent-red: #BF616A;
+      --accent-red-dim: #A8555D;
+      --accent-yellow: #EBCB8B;
+      --accent-yellow-dim: #D4B877;
+      --accent-blue: #81A1C1;
+      --accent-blue-dim: #5E81AC;
+      --accent-purple: #B48EAD;
+      --accent-orange: #D08770;
+    }
+
+    :root[data-theme="midnight"] {
+      --bg-primary: #0D0F1A;
+      --bg-secondary: #141726;
+      --bg-card: #141726;
+      --bg-card-hover: #1C2035;
+      --bg-sidebar: #080A12;
+      --border-subtle: #252A42;
+      --border-glow: #363D60;
+      --text-primary: #E8EAFF;
+      --text-secondary: #9BA3C8;
+      --text-muted: #6B7399;
+      --accent-green: #34D399;
+      --accent-green-dim: #10B981;
+      --accent-red: #F87171;
+      --accent-red-dim: #EF4444;
+      --accent-yellow: #FCD34D;
+      --accent-yellow-dim: #F59E0B;
+      --accent-blue: #818CF8;
+      --accent-blue-dim: #6366F1;
+      --accent-purple: #A78BFA;
+      --accent-orange: #FB923C;
+    }
+
+    :root[data-theme="sage"] {
       --bg-primary: #0c1a0e;
       --bg-secondary: #112416;
       --bg-card: #182e1c;
@@ -1441,6 +1571,17 @@ ${highContrastOverride}${customOverrides}
       --accent-orange: #fdba74;
     }
 
+    [data-theme="light"] .card,
+    [data-theme="light"] .test-list-item {
+      box-shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+    }
+
+    @media (prefers-color-scheme: light) {
+      .card, .test-list-item {
+        box-shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+      }
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     button {
@@ -1456,7 +1597,6 @@ ${highContrastOverride}${customOverrides}
       background: var(--bg-primary);
       color: var(--text-primary);
       height: 100vh;
-      overflow: hidden;
       line-height: 1.5;
     }
 
@@ -1495,7 +1635,7 @@ ${highContrastOverride}${customOverrides}
       padding: 0 1rem;
       background: var(--bg-secondary);
       border-bottom: 1px solid var(--border-subtle);
-      z-index: 100;
+      z-index: 20;
     }
 
     .top-bar-left {
@@ -1693,66 +1833,49 @@ ${highContrastOverride}${customOverrides}
     }
 
     .sidebar-progress {
-      padding: 1.25rem;
-      text-align: center;
+      padding: 12px 16px;
       border-bottom: 1px solid var(--border-subtle);
       flex-shrink: 0;
     }
 
-    .progress-ring-container {
-      position: relative;
-      width: 80px;
-      height: 80px;
-      margin: 0 auto;
+    .sidebar-progress-bar-wrap {
+      height: 6px;
+      background: var(--border-subtle);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 6px;
     }
 
-    .progress-ring-container.clickable {
-      cursor: pointer;
-      transition: transform 0.2s, filter 0.2s;
+    .sidebar-progress-bar {
+      height: 100%;
+      background: var(--accent-green);
+      border-radius: 3px;
+      transition: width 0.3s ease;
     }
 
-    .progress-ring-container.clickable:hover {
-      transform: scale(1.05);
-      filter: brightness(1.1);
-    }
-
-    .progress-ring {
-      transform: rotate(-90deg);
-    }
-
-    .progress-ring-bg {
-      fill: none;
-      stroke: var(--border-subtle);
-      stroke-width: 6;
-    }
-
-    .progress-ring-fill {
-      fill: none;
-      stroke: var(--accent-green);
-      stroke-width: 6;
-      stroke-linecap: round;
-      transition: stroke-dashoffset 0.5s ease;
-      filter: drop-shadow(0 0 6px var(--accent-green));
-    }
-
-    .progress-ring-value {
-      position: absolute;
-      inset: 0;
+    .sidebar-progress-label {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: ${monoFont};
-      font-size: 1.1rem;
-      font-weight: 700;
-      color: var(--accent-green);
+      justify-content: space-between;
+      align-items: baseline;
     }
 
-    .progress-label {
-      font-size: 0.7rem;
+    .sidebar-pass-rate {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .sidebar-test-count {
+      font-size: 0.75rem;
       color: var(--text-muted);
-      margin-top: 0.5rem;
+    }
+
+    .sidebar-section-label {
+      font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.1em;
+      color: var(--text-muted);
+      padding: 12px 16px 4px;
     }
 
     .sidebar-stats {
@@ -1926,9 +2049,9 @@ ${highContrastOverride}${customOverrides}
     }
 
     .filter-chip.active {
-      background: var(--bg-card);
-      color: var(--accent-blue);
-      border-color: var(--accent-blue);
+      background: var(--accent-blue);
+      color: white;
+      border-color: transparent;
     }
 
     .grade-chips .filter-chip {
@@ -2018,8 +2141,9 @@ ${highContrastOverride}${customOverrides}
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.4rem 0.6rem;
+      padding: 0.4rem 0.6rem 0.4rem 10px;
       border-radius: 6px;
+      border-left: 3px solid var(--border-subtle);
       cursor: pointer;
       transition: all 0.2s;
       font-size: 0.8rem;
@@ -2045,6 +2169,8 @@ ${highContrastOverride}${customOverrides}
 
     .file-tree-item.has-failures .file-tree-name { color: var(--accent-red); }
     .file-tree-item.all-passed .file-tree-name { color: var(--text-secondary); }
+    .file-tree-item.has-failures { border-left-color: var(--accent-red); }
+    .file-tree-item.all-passed { border-left-color: var(--accent-green); }
 
     .file-tree-stats {
       display: flex;
@@ -2177,6 +2303,85 @@ ${highContrastOverride}${customOverrides}
       border: 1px solid var(--border-subtle);
       border-radius: 16px;
       padding: 1.5rem;
+    }
+
+    /* ============================================
+       OVERVIEW - EXECUTIVE SUMMARY ZONE
+    ============================================ */
+    .executive-summary {
+      margin-bottom: 24px;
+    }
+
+    .exec-stat-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .exec-stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 20px 24px;
+      min-width: 160px;
+      flex: 1;
+    }
+
+    .exec-stat-score {
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .exec-stat-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .exec-stat-sublabel {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .exec-stat-verdict {
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .exec-stat-delta {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .verdict-healthy { color: var(--accent-green); }
+    .verdict-at-risk { color: var(--accent-yellow); }
+    .verdict-critical { color: var(--accent-red); }
+
+    .quality-gate-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .gate-pass {
+      background: var(--accent-green);
+      color: white;
+    }
+
+    .gate-fail {
+      background: var(--accent-red);
+      color: white;
     }
 
     /* ============================================
@@ -2711,27 +2916,26 @@ ${highContrastOverride}${customOverrides}
     }
 
     .tab-btn {
-      font-size: 0.75rem;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      border: 1px solid transparent;
       background: transparent;
-      color: var(--text-muted);
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 8px 16px;
       cursor: pointer;
-      transition: all 0.2s;
+      color: var(--text-secondary);
+      font-size: 0.875rem;
       font-family: inherit;
       font-weight: 500;
+      transition: border-color 0.15s, color 0.15s;
     }
 
     .tab-btn:hover {
-      background: var(--bg-card);
-      color: var(--text-secondary);
+      color: var(--text-primary);
     }
 
     .tab-btn.active {
-      background: var(--bg-card);
-      color: var(--accent-blue);
-      border-color: var(--accent-blue);
+      border-bottom-color: var(--accent-blue);
+      color: var(--text-primary);
+      background: transparent;
     }
 
     .test-list-search {
@@ -2777,10 +2981,16 @@ ${highContrastOverride}${customOverrides}
       margin-bottom: 0.25rem;
       background: var(--bg-card);
       border: 1px solid transparent;
+      border-left: 3px solid transparent;
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s;
     }
+
+    .test-list-item[data-status="passed"] { border-left-color: var(--accent-green); }
+    .test-list-item[data-status="failed"] { border-left-color: var(--accent-red); }
+    .test-list-item[data-status="flaky"] { border-left-color: var(--accent-yellow); }
+    .test-list-item[data-status="skipped"] { border-left-color: var(--text-muted); }
 
     .test-list-item:hover {
       background: var(--bg-card-hover);
@@ -3086,7 +3296,7 @@ ${highContrastOverride}${customOverrides}
       display: none;
       position: fixed;
       inset: 0;
-      z-index: 1000;
+      z-index: 50;
       align-items: flex-start;
       justify-content: center;
       padding-top: 15vh;
@@ -3178,22 +3388,6 @@ ${highContrastOverride}${customOverrides}
       font-family: ${monoFont};
       font-size: 0.75rem;
       color: var(--text-muted);
-    }
-
-    /* ============================================
-       EXISTING STYLES (preserved from original)
-    ============================================ */
-
-    .progress-ring .value {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: ${monoFont};
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--accent-green);
     }
 
     /* Trend Chart - Pass Rate Over Time */
@@ -5873,7 +6067,7 @@ ${highContrastOverride}${customOverrides}
       position: fixed;
       bottom: 24px;
       right: 24px;
-      z-index: 10000;
+      z-index: 60;
       display: flex;
       flex-direction: column;
       gap: 8px;
@@ -5958,7 +6152,7 @@ ${highContrastOverride}${customOverrides}
       border: 1px solid var(--border-glow);
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      z-index: 1000;
+      z-index: 30;
       min-width: 120px;
       opacity: 0;
       visibility: hidden;
@@ -6155,26 +6349,6 @@ ${highContrastOverride}${customOverrides}
         padding: 0.75rem;
       }
 
-      .progress-ring-container {
-        width: 60px;
-        height: 60px;
-      }
-
-      .progress-ring {
-        width: 60px;
-        height: 60px;
-      }
-
-      .progress-ring circle {
-        cx: 30;
-        cy: 30;
-        r: 25;
-      }
-
-      .progress-ring-value {
-        font-size: 0.9rem;
-      }
-
       .nav-item {
         padding: 0.5rem 0.6rem;
         font-size: 0.8rem;
@@ -6278,7 +6452,6 @@ ${highContrastOverride}${customOverrides}
         text-decoration: underline;
       }
 
-      .progress-ring,
       .trend-section,
       .gallery-section {
         break-inside: avoid;
@@ -6777,6 +6950,7 @@ function generateScripts(
   statsData: string,
   outputBasename: string
 ): string {
+  const icons = generateIcons();
   return `    const tests = ${testsJson};
     const pdfBasename = ${JSON.stringify(outputBasename)};
     const stats = ${statsData};
@@ -7749,23 +7923,28 @@ function generateScripts(
       }
     });
 
-    const themeConfig = {
-      system:    { icon: '💻', label: 'System',    attr: null },
-      light:     { icon: '☀️', label: 'Light',     attr: 'light' },
-      dark:      { icon: '🌙', label: 'Dark',      attr: 'dark' },
-      ocean:     { icon: '🌊', label: 'Ocean',     attr: 'ocean' },
-      sunset:    { icon: '🌅', label: 'Sunset',    attr: 'sunset' },
-      dracula:   { icon: '🧛', label: 'Dracula',   attr: 'dracula' },
-      cyberpunk: { icon: '⚡', label: 'Cyberpunk', attr: 'cyberpunk' },
-      forest:    { icon: '🌲', label: 'Forest',    attr: 'forest' },
-      rose:      { icon: '🌹', label: 'Rose',      attr: 'rose' },
-    };
+    const themeConfig = [
+      { key: 'system',   label: 'System',   icon: ${JSON.stringify(icons['monitor'])},  attr: null },
+      { key: 'sentinel', label: 'Sentinel', icon: ${JSON.stringify(icons['moon'])},     attr: 'sentinel' },
+      { key: 'dark',     label: 'Dark',     icon: ${JSON.stringify(icons['moon'])},     attr: 'dark' },
+      { key: 'light',    label: 'Light',    icon: ${JSON.stringify(icons['sun'])},      attr: 'light' },
+      { key: 'ocean',    label: 'Ocean',    icon: ${JSON.stringify(icons['waves'])},    attr: 'ocean' },
+      { key: 'dracula',  label: 'Dracula',  icon: ${JSON.stringify(icons['ghost'])},    attr: 'dracula' },
+      { key: 'nord',     label: 'Nord',     icon: ${JSON.stringify(icons['snowflake'])},attr: 'nord' },
+      { key: 'sunset',   label: 'Sunset',   icon: ${JSON.stringify(icons['sunset'])},   attr: 'sunset' },
+      { key: 'rose',     label: 'Rose',     icon: ${JSON.stringify(icons['flower-2'])}, attr: 'rose' },
+      { key: 'sage',     label: 'Sage',     icon: ${JSON.stringify(icons['leaf'])},     attr: 'sage' },
+      { key: 'midnight', label: 'Midnight', icon: ${JSON.stringify(icons['star'])},     attr: 'midnight' },
+    ];
+
+    function getThemeCfg(key) {
+      return themeConfig.find(t => t.key === key) || themeConfig[0];
+    }
 
     function setTheme(theme) {
       const root = document.documentElement;
-      const icon = document.getElementById('themeIcon');
       const label = document.getElementById('themeLabel');
-      const cfg = themeConfig[theme] || themeConfig.system;
+      const cfg = getThemeCfg(theme);
 
       document.querySelectorAll('.theme-menu-item').forEach(item => {
         item.classList.toggle('active', item.dataset.theme === theme);
@@ -7776,7 +7955,6 @@ function generateScripts(
       } else {
         root.removeAttribute('data-theme');
       }
-      if (icon) icon.textContent = cfg.icon;
       if (label) label.textContent = cfg.label;
       localStorage.setItem('theme', theme);
       showToast(cfg.attr ? cfg.label + ' theme' : 'Using system theme', 'info');
@@ -7786,9 +7964,8 @@ function generateScripts(
     // Initialize theme from localStorage
     (function initTheme() {
       const saved = localStorage.getItem('theme') || 'system';
-      const icon = document.getElementById('themeIcon');
       const label = document.getElementById('themeLabel');
-      const cfg = themeConfig[saved] || themeConfig.system;
+      const cfg = getThemeCfg(saved);
 
       document.querySelectorAll('.theme-menu-item').forEach(item => {
         item.classList.toggle('active', item.dataset.theme === saved);
@@ -7797,7 +7974,6 @@ function generateScripts(
       if (cfg.attr) {
         document.documentElement.setAttribute('data-theme', cfg.attr);
       }
-      if (icon) icon.textContent = cfg.icon;
       if (label) label.textContent = cfg.label;
     })();
 
@@ -8149,18 +8325,43 @@ ${includeComparison ? `    // Comparison functions\n${generateComparisonScript()
        KEYBOARD-DRIVEN NAVIGATION
     ============================================ */
     (function initKeyboardNav() {
-      // Create keyboard hints panel
+      const isMac = navigator.platform.includes('Mac');
+      const searchKey = isMac ? '\u2318K' : 'Ctrl+K';
+      const sidebarKey = isMac ? '\u2318B' : 'Ctrl+B';
+
+      // Update search button keyboard hint
+      document.querySelectorAll('.kbd-hint').forEach(function(el) {
+        el.textContent = searchKey;
+      });
+
+      // Create keyboard hints panel using DOM methods (no innerHTML)
+      function makeHintRow(label, keys) {
+        const row = document.createElement('div');
+        row.className = 'keyboard-hint-row';
+        const s = document.createElement('span');
+        s.textContent = label;
+        row.appendChild(s);
+        keys.forEach(function(k, i) {
+          if (i > 0) row.appendChild(document.createTextNode(' '));
+          const kbd = document.createElement('kbd');
+          kbd.textContent = k;
+          row.appendChild(kbd);
+        });
+        return row;
+      }
       const hints = document.createElement('div');
       hints.className = 'keyboard-hints';
-      hints.innerHTML = '<h4>Keyboard Shortcuts</h4>' +
-        '<div class="keyboard-hint-row"><span>Navigate tests</span><kbd>j</kbd> <kbd>k</kbd></div>' +
-        '<div class="keyboard-hint-row"><span>Next failure</span><kbd>f</kbd></div>' +
-        '<div class="keyboard-hint-row"><span>Next flaky</span><kbd>n</kbd></div>' +
-        '<div class="keyboard-hint-row"><span>Search</span><kbd>⌘K</kbd></div>' +
-        '<div class="keyboard-hint-row"><span>Toggle sidebar</span><kbd>⌘B</kbd></div>' +
-        '<div class="keyboard-hint-row"><span>Views (1-5)</span><kbd>1</kbd>-<kbd>5</kbd></div>' +
-        '<div class="keyboard-hint-row"><span>Show/hide hints</span><kbd>?</kbd></div>' +
-        '<div class="keyboard-hint-row"><span>Export summary</span><kbd>e</kbd></div>';
+      const h4 = document.createElement('h4');
+      h4.textContent = 'Keyboard Shortcuts';
+      hints.appendChild(h4);
+      hints.appendChild(makeHintRow('Navigate tests', ['j', 'k']));
+      hints.appendChild(makeHintRow('Next failure', ['f']));
+      hints.appendChild(makeHintRow('Next flaky', ['n']));
+      hints.appendChild(makeHintRow('Search', [searchKey]));
+      hints.appendChild(makeHintRow('Toggle sidebar', [sidebarKey]));
+      hints.appendChild(makeHintRow('Views (1-5)', ['1-5']));
+      hints.appendChild(makeHintRow('Show/hide hints', ['?']));
+      hints.appendChild(makeHintRow('Export summary', ['e']));
       document.body.appendChild(hints);
 
       function getVisibleTestItems() {

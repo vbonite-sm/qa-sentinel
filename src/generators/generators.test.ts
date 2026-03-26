@@ -245,6 +245,79 @@ describe('html-generator', () => {
       // That's intentional - we only strip from JSON to reduce size
     });
 
+    it('loads Inter and JetBrains Mono from Google Fonts', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('fonts.googleapis.com');
+      expect(html).toContain('Inter');
+      expect(html).toContain('JetBrains+Mono');
+    });
+
+    it('title tag reflects reportTitle from branding config', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: { branding: { title: 'My Suite' } },
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('<title>My Suite</title>');
+      expect(html).not.toContain('<title>Smart Test Report</title>');
+    });
+
+    it('default title is Sentinel when no branding title set', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('<title>Sentinel</title>');
+    });
+
+    it('default dark theme uses slate-900 background, not neon green', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('--bg-primary: #0F172A');
+      expect(html).toContain('--accent-green: #10B981');
+      expect(html).not.toContain('#00ff88');
+      expect(html).not.toContain('#0a0a0f');
+    });
+
+    it('light theme uses WCAG AA compliant text tokens', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: { theme: { preset: 'light' } },
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('--text-secondary: #475569');
+      expect(html).toContain('--text-muted: #64748B');
+    });
+
+    it('light mode cards have box-shadow for depth', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: { theme: { preset: 'light' } },
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('box-shadow: 0 1px 3px rgba(15,23,42,0.06)');
+    });
+
     it('handles many tests without exceeding string limits', () => {
       // Create 100 tests with screenshots (simulating a medium-sized suite)
       const results = Array.from({ length: 100 }, (_, i) =>
@@ -278,6 +351,138 @@ describe('html-generator', () => {
       expect(testsJson).not.toContain('BBBBBBBBBBBBBBBBB');
       // Should use placeholder instead
       expect(testsJson).toContain('[base64-screenshot]');
+    });
+
+    it('removes cyberpunk theme CSS', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).not.toContain('[data-theme="cyberpunk"]');
+    });
+
+    it('adds sentinel theme CSS block', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('[data-theme="sentinel"]');
+    });
+
+    it('adds nord theme CSS block', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('[data-theme="nord"]');
+    });
+
+    it('adds midnight theme CSS block', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('[data-theme="midnight"]');
+    });
+
+    it('renames forest to sage theme CSS', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('[data-theme="sage"]');
+      expect(html).not.toContain('[data-theme="forest"]');
+    });
+
+    it('uses SVG icon elements in the generated HTML', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      // generateIcons() is called and SVG output is embedded
+      expect(html).toContain('<svg xmlns="http://www.w3.org/2000/svg"');
+      expect(html).toContain('class="icon"');
+    });
+
+    it('topbar contains no raw emoji characters', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).not.toContain('☰');
+      expect(html).not.toContain('🔍');
+      expect(html).not.toContain('📥');
+      expect(html).not.toContain('📊');
+      expect(html).not.toContain('🧪');
+      expect(html).not.toContain('📈');
+      expect(html).not.toContain('⚖️');
+      expect(html).not.toContain('🖼️');
+    });
+
+    it('platform keyboard shortcut uses runtime detection not hardcoded symbol', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('navigator.platform');
+      expect(html).toContain('Ctrl+K');
+    });
+
+    it('overview contains executive-summary zone', () => {
+      const html = generateHtml({
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      });
+      expect(html).toContain('executive-summary');
+    });
+
+    it('overview contains developer-detail zone', () => {
+      const html = generateHtml({
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      });
+      expect(html).toContain('developer-detail');
+    });
+
+    it('overview shows health score with plain-english verdict', () => {
+      const html = generateHtml({
+        results: [
+          { testId: 'test-1', title: 'Test One', file: 'tests/ex.spec.ts', status: 'passed', duration: 1000, retry: 0, steps: [], history: [] },
+          { testId: 'test-2', title: 'Test Two', file: 'tests/ex.spec.ts', status: 'passed', duration: 1000, retry: 0, steps: [], history: [] },
+        ],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      });
+      expect(html).toMatch(/Healthy|At Risk|Critical/);
     });
   });
 });
@@ -596,5 +801,101 @@ describe('comparison-generator', () => {
       expect(comparison.changes.newTests).toHaveLength(1);
       expect(comparison.changes.newTests[0].testId).toBe('new-test');
     });
+  });
+});
+
+describe('Task 8: card-generator.ts Emoji Removal', () => {
+  it('test cards contain no raw emoji characters', () => {
+    const test: TestResultData = {
+      testId: 'test-attach',
+      title: 'Test with attachments',
+      file: 'tests/attach.spec.ts',
+      status: 'failed',
+      duration: 1500,
+      retry: 0,
+      steps: [],
+      history: [],
+      attachments: {
+        screenshots: [],
+        videos: [],
+        traces: ['test.zip'],
+        custom: [
+          { name: 'screenshot', path: 'test.png', contentType: 'image/png' },
+          { name: 'video', path: 'test.webm', contentType: 'video/webm' },
+        ],
+      },
+      videoPath: 'test.webm',
+      error: 'Something failed',
+      aiSuggestion: 'Try again',
+      browser: 'chromium',
+      annotations: [{ type: 'flaky', description: 'Intermittent' }],
+    };
+    // Test card output (covers getAttachmentIcon, getBrowserIcon, getAnnotationIcon, trace viewer links)
+    const card = generateTestCard(test, true);
+    // Grouped output (covers file-group-name emoji)
+    const grouped = generateGroupedTests([test], true);
+
+    const combined = card + grouped;
+
+    // Verify specific emoji used in card-generator are gone
+    expect(combined).not.toContain('📄');
+    expect(combined).not.toContain('🔍');
+    expect(combined).not.toContain('📦');
+    expect(combined).not.toContain('🎬');
+    // Also verify other known card-generator emoji are gone
+    expect(combined).not.toContain('🖼️');
+    expect(combined).not.toContain('🌐');
+    expect(combined).not.toContain('🦊');
+    expect(combined).not.toContain('🧭');
+    expect(combined).not.toContain('🔷');
+    expect(combined).not.toContain('🖥️');
+    expect(combined).not.toContain('🐢');
+    expect(combined).not.toContain('🔧');
+    expect(combined).not.toContain('⏭️');
+    expect(combined).not.toContain('❌');
+    expect(combined).not.toContain('🐛');
+    expect(combined).not.toContain('🎲');
+    expect(combined).not.toContain('📝');
+    expect(combined).not.toContain('📌');
+    expect(combined).not.toContain('📎');
+    expect(combined).not.toContain('📋');
+    expect(combined).not.toContain('📑');
+    expect(combined).not.toContain('🔊');
+  });
+});
+
+describe('Task 7: Sidebar Polish + Cross-Mode Polish', () => {
+  it('sidebar has horizontal progress bar, not SVG ring', () => {
+    const html = generateHtml({
+      results: [
+        { testId: 'test-1', title: 'T1', file: 'a.spec.ts', status: 'passed', duration: 500, retry: 0, steps: [], history: [] },
+      ],
+      history: createTestHistory(),
+      startTime: Date.now(),
+      options: {},
+    });
+    expect(html).toContain('sidebar-progress-bar');
+    expect(html).not.toContain('progress-ring');
+  });
+
+  it('filter chip active state uses filled background style', () => {
+    const html = generateHtml({
+      results: [],
+      history: createTestHistory(),
+      startTime: Date.now(),
+      options: {},
+    });
+    expect(html).toContain('background: var(--accent-blue)');
+  });
+
+  it('body does not use overflow hidden', () => {
+    const html = generateHtml({
+      results: [],
+      history: createTestHistory(),
+      startTime: Date.now(),
+      options: {},
+    });
+    // Check body element rule does not include overflow hidden (use negative lookbehind to exclude -body selectors)
+    expect(html).not.toMatch(/(?<![-\w])body\s*\{[^}]*overflow:\s*hidden/);
   });
 });

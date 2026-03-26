@@ -26,7 +26,7 @@ export function generateTraceViewerHtml(): string {
     <div class="trace-modal-content">
       <div class="trace-modal-header">
         <h3 class="trace-modal-title">
-          <span class="trace-modal-icon">📊</span>
+          <span class="trace-modal-icon"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/></svg></span>
           <span id="traceViewerTitle">Trace Viewer</span>
         </h3>
         <div class="trace-header-controls">
@@ -2462,7 +2462,7 @@ export function generateTraceViewerScript(): string {
         'warning': '⚠️',
         'warn': '⚠️',
         'error': '❌',
-        'debug': '🔍'
+        'debug': 'dbg'
       };
       return icons[type] || '📝';
     }
