@@ -1204,7 +1204,7 @@ ${enableTraceViewer ? generateTraceViewerScript() : ''}
   </script>
 ${branding?.footer || !branding?.hidePoweredBy ? `  <footer class="report-footer" style="text-align:center;padding:12px 16px;font-size:11px;color:var(--text-muted);border-top:1px solid var(--border-subtle);">
 ${branding?.footer ? `    <div>${escapeHtml(branding.footer)}</div>` : ''}
-${!branding?.hidePoweredBy ? '    <div>Powered by <a href="https://github.com/gary-parker/qa-sentinel" style="color:var(--accent-blue);text-decoration:none;">Smart Reporter</a></div>' : ''}
+${!branding?.hidePoweredBy ? '    <div>Powered by <a href="https://github.com/vbonite-sm/qa-sentinel" style="color:var(--accent-blue);text-decoration:none;">QA Sentinel</a></div>' : ''}
   </footer>` : ''}
 </body>
 </html>`;
