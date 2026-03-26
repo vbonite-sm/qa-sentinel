@@ -543,6 +543,22 @@ export interface RunManifest {
   durationMs: number;
 }
 
+export interface ScribeRecord {
+  testId: string;
+  jiraTicketId?: string;
+  githubCommentId?: number;
+  filedAt: string;
+  resolvedAt?: string;
+}
+
+export interface RunData {
+  manifest: RunManifest;
+  failedTests: Array<{ testId: string; title: string; error: string; filePath: string }>;
+  passedTests: Array<{ testId: string; title: string }>;
+  passRate: number;
+  stabilityGrade: string;
+}
+
 // ============================================================================
 // Sentinel Agent Types
 // ============================================================================
