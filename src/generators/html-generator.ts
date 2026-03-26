@@ -327,7 +327,10 @@ function generateOverviewContent(
     </div>
   ` : '';
 
-  return `
+  const healthVerdict = suiteHealthScore >= 80 ? 'Healthy' : suiteHealthScore >= 50 ? 'At Risk' : 'Critical';
+  const healthVerdictClass = suiteHealthScore >= 80 ? 'verdict-healthy' : suiteHealthScore >= 50 ? 'verdict-at-risk' : 'verdict-critical';
+
+  const existingContent = `
     <!-- Hero Stats Row -->
     <div class="hero-stats">
       <div class="hero-stat-card health ${healthClass}">
@@ -459,6 +462,35 @@ function generateOverviewContent(
         </div>
       </div>
     </div>
+  `;
+
+  return `
+  <div class="executive-summary">
+    <div class="exec-stat-row">
+      <div class="exec-stat-card">
+        <div class="exec-stat-score ${healthVerdictClass}">${suiteHealthScore}</div>
+        <div class="exec-stat-label">Health Score</div>
+        <div class="exec-stat-verdict ${healthVerdictClass}">${healthVerdict}</div>
+      </div>
+      <div class="exec-stat-card">
+        <div class="exec-stat-score">${passRate}%</div>
+        <div class="exec-stat-label">Pass Rate</div>
+      </div>
+      <div class="exec-stat-card">
+        <div class="exec-stat-score">${formatDuration(totalDuration)}</div>
+        <div class="exec-stat-label">Duration</div>
+        <div class="exec-stat-sublabel">${results.length} tests</div>
+      </div>
+      ${qualityGateResult ? `
+      <div class="exec-stat-card">
+        <div class="quality-gate-badge ${qualityGateResult.passed ? 'gate-pass' : 'gate-fail'}">${qualityGateResult.passed ? 'PASS' : 'FAIL'}</div>
+        <div class="exec-stat-label">Quality Gate</div>
+      </div>` : ''}
+    </div>
+  </div>
+  <div class="developer-detail">
+    ${existingContent}
+  </div>
   `;
 }
 
@@ -2288,6 +2320,79 @@ ${highContrastOverride}${customOverrides}
       border: 1px solid var(--border-subtle);
       border-radius: 16px;
       padding: 1.5rem;
+    }
+
+    /* ============================================
+       OVERVIEW - EXECUTIVE SUMMARY ZONE
+    ============================================ */
+    .executive-summary {
+      margin-bottom: 24px;
+    }
+
+    .exec-stat-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .exec-stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 20px 24px;
+      min-width: 160px;
+      flex: 1;
+    }
+
+    .exec-stat-score {
+      font-size: 2.5rem;
+      font-weight: 700;
+      line-height: 1;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .exec-stat-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .exec-stat-sublabel {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .exec-stat-verdict {
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .verdict-healthy { color: var(--accent-green); }
+    .verdict-at-risk { color: var(--accent-yellow); }
+    .verdict-critical { color: var(--accent-red); }
+
+    .quality-gate-badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 4px;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .gate-pass {
+      background: var(--accent-green);
+      color: white;
+    }
+
+    .gate-fail {
+      background: var(--accent-red);
+      color: white;
     }
 
     /* ============================================

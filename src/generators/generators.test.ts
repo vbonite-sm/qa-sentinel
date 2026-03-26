@@ -451,6 +451,39 @@ describe('html-generator', () => {
       expect(html).toContain('navigator.platform');
       expect(html).toContain('Ctrl+K');
     });
+
+    it('overview contains executive-summary zone', () => {
+      const html = generateHtml({
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      });
+      expect(html).toContain('executive-summary');
+    });
+
+    it('overview contains developer-detail zone', () => {
+      const html = generateHtml({
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      });
+      expect(html).toContain('developer-detail');
+    });
+
+    it('overview shows health score with plain-english verdict', () => {
+      const html = generateHtml({
+        results: [
+          { testId: 'test-1', title: 'Test One', file: 'tests/ex.spec.ts', status: 'passed', duration: 1000, retry: 0, steps: [], history: [] },
+          { testId: 'test-2', title: 'Test Two', file: 'tests/ex.spec.ts', status: 'passed', duration: 1000, retry: 0, steps: [], history: [] },
+        ],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      });
+      expect(html).toMatch(/Healthy|At Risk|Critical/);
+    });
   });
 });
 
