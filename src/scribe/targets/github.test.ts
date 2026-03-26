@@ -85,7 +85,7 @@ describe('GitHubScribeTarget', () => {
       mockRequest(201, { id: 9001 })
       const target = new GitHubScribeTarget(tmpDir)
       await target.push(makeRunData())
-      const opts = vi.mocked(https.request).mock.calls[0][0] as { hostname: string; path: string; method: string }
+      const opts = vi.mocked(https.request).mock.calls[0][0] as unknown as { hostname: string; path: string; method: string }
       expect(opts.hostname).toBe('api.github.com')
       expect(opts.path).toContain('/issues/42/comments')
       expect(opts.method).toBe('POST')
@@ -95,7 +95,7 @@ describe('GitHubScribeTarget', () => {
       mockRequest(201, { id: 9001 })
       const target = new GitHubScribeTarget(tmpDir)
       await target.push(makeRunData())
-      const opts = vi.mocked(https.request).mock.calls[0][0] as { headers: Record<string, string> }
+      const opts = vi.mocked(https.request).mock.calls[0][0] as unknown as { headers: Record<string, string> }
       expect(opts.headers['Authorization']).toBe('Bearer ghp_test_token')
     })
 

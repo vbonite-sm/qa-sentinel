@@ -4,12 +4,12 @@ import { EventEmitter } from 'events'
 
 vi.mock('https')
 
-import { SlackScribeTarget } from './slack'
+import { TeamsScribeTarget } from './teams'
 import type { RunData, SentinelConfig } from '../../types'
 
 beforeEach(() => {
   vi.resetAllMocks()
-  vi.stubEnv('SLACK_WEBHOOK_URL', 'https://hooks.slack.com/services/T00/B00/xxx')
+  vi.stubEnv('TEAMS_WEBHOOK_URL', 'https://outlook.office.com/webhook/xxx/IncomingWebhook/yyy/zzz')
 })
 
 afterEach(() => {
@@ -19,9 +19,9 @@ afterEach(() => {
 
 function makeRunData(overrides: Partial<RunData> = {}): RunData {
   return {
-    manifest: { runId: 'run-slack', timestamp: '2026-03-26T00:00:00.000Z', exitCode: 1, durationMs: 2000 },
-    failedTests: [{ testId: 'test-1', title: 'Checkout fails', error: 'Timeout', filePath: 'tests/checkout.spec.ts' }],
-    passedTests: [{ testId: 'test-2', title: 'Login passes' }],
+    manifest: { runId: 'run-teams', timestamp: '2026-03-26T00:00:00.000Z', exitCode: 1, durationMs: 4000 },
+    failedTests: [{ testId: 'test-1', title: 'Payment flow fails', error: 'Element not found', filePath: 'tests/payment.spec.ts' }],
+    passedTests: [{ testId: 'test-2', title: 'Cart works' }],
     passRate: 50,
     stabilityGrade: 'C',
     ...overrides,
@@ -37,7 +37,7 @@ function mockRequest(statusCode: number) {
     res.statusCode = statusCode
     setImmediate(() => {
       if (callback) (callback as (res: unknown) => void)(res)
-      res.emit('data', Buffer.from('ok'))
+      res.emit('data', Buffer.from('1'))
       res.emit('end')
     })
     return req as unknown as ReturnType<typeof https.request>
@@ -45,64 +45,64 @@ function mockRequest(statusCode: number) {
   return req
 }
 
-describe('SlackScribeTarget', () => {
+describe('TeamsScribeTarget', () => {
   describe('canHandle', () => {
-    it('returns true when slack enabled and SLACK_WEBHOOK_URL set', () => {
-      const target = new SlackScribeTarget()
-      expect(target.canHandle({ scribe: { slack: true } })).toBe(true)
+    it('returns true when teams enabled and TEAMS_WEBHOOK_URL set', () => {
+      const target = new TeamsScribeTarget()
+      expect(target.canHandle({ scribe: { teams: true } })).toBe(true)
     })
 
-    it('returns false when slack disabled', () => {
-      const target = new SlackScribeTarget()
-      expect(target.canHandle({ scribe: { slack: false } })).toBe(false)
+    it('returns false when teams disabled', () => {
+      const target = new TeamsScribeTarget()
+      expect(target.canHandle({ scribe: { teams: false } })).toBe(false)
     })
 
-    it('returns false when SLACK_WEBHOOK_URL is missing', () => {
-      vi.stubEnv('SLACK_WEBHOOK_URL', '')
-      const target = new SlackScribeTarget()
-      expect(target.canHandle({ scribe: { slack: true } })).toBe(false)
+    it('returns false when TEAMS_WEBHOOK_URL is missing', () => {
+      vi.stubEnv('TEAMS_WEBHOOK_URL', '')
+      const target = new TeamsScribeTarget()
+      expect(target.canHandle({ scribe: { teams: true } })).toBe(false)
     })
   })
 
   describe('push', () => {
-    it('sends a POST to the Slack webhook URL', async () => {
+    it('sends a POST to the Teams webhook', async () => {
       mockRequest(200)
-      const target = new SlackScribeTarget()
+      const target = new TeamsScribeTarget()
       await target.push(makeRunData())
-      const opts = vi.mocked(https.request).mock.calls[0][0] as unknown as { hostname: string; path: string; method: string }
-      expect(opts.hostname).toBe('hooks.slack.com')
+      const opts = vi.mocked(https.request).mock.calls[0][0] as unknown as { hostname: string; method: string }
+      expect(opts.hostname).toBe('outlook.office.com')
       expect(opts.method).toBe('POST')
     })
 
-    it('payload contains the run summary with pass rate', async () => {
+    it('sends MessageCard with themeColor red on failure', async () => {
       mockRequest(200)
-      const target = new SlackScribeTarget()
+      const target = new TeamsScribeTarget()
       await target.push(makeRunData())
       const req = vi.mocked(https.request).mock.results[0].value as { write: ReturnType<typeof vi.fn> }
       const body = JSON.parse(req.write.mock.calls[0][0] as string)
-      const text = JSON.stringify(body)
-      expect(text).toContain('50%')
+      expect(body['@type']).toBe('MessageCard')
+      expect(body.themeColor).toBe('FF4444')
     })
 
-    it('payload lists failed test names', async () => {
+    it('includes pass rate in facts', async () => {
       mockRequest(200)
-      const target = new SlackScribeTarget()
+      const target = new TeamsScribeTarget()
       await target.push(makeRunData())
       const req = vi.mocked(https.request).mock.results[0].value as { write: ReturnType<typeof vi.fn> }
       const body = JSON.parse(req.write.mock.calls[0][0] as string)
-      const text = JSON.stringify(body)
-      expect(text).toContain('Checkout fails')
+      const facts = body.sections[0].facts as Array<{ name: string; value: string }>
+      const passRateFact = facts.find((f) => f.name === 'Pass Rate')
+      expect(passRateFact?.value).toContain('50%')
     })
 
-    it('payload includes grade and run ID', async () => {
+    it('includes failed test names in the body text', async () => {
       mockRequest(200)
-      const target = new SlackScribeTarget()
+      const target = new TeamsScribeTarget()
       await target.push(makeRunData())
       const req = vi.mocked(https.request).mock.results[0].value as { write: ReturnType<typeof vi.fn> }
       const body = JSON.parse(req.write.mock.calls[0][0] as string)
       const text = JSON.stringify(body)
-      expect(text).toContain('run-slack')
-      expect(text).toContain('C')
+      expect(text).toContain('Payment flow fails')
     })
 
     it('does not throw on network error', async () => {
@@ -110,16 +110,16 @@ describe('SlackScribeTarget', () => {
       req.write = vi.fn()
       req.end = vi.fn()
       vi.mocked(https.request).mockImplementation(() => {
-        setImmediate(() => req.emit('error', new Error('socket hang up')))
+        setImmediate(() => req.emit('error', new Error('refused')))
         return req as unknown as ReturnType<typeof https.request>
       })
-      const target = new SlackScribeTarget()
+      const target = new TeamsScribeTarget()
       await expect(target.push(makeRunData())).resolves.not.toThrow()
     })
 
-    it('skips sending when there are no failures and all tests pass', async () => {
+    it('skips when there are no failures', async () => {
       mockRequest(200)
-      const target = new SlackScribeTarget()
+      const target = new TeamsScribeTarget()
       await target.push(makeRunData({ failedTests: [], passRate: 100 }))
       expect(https.request).not.toHaveBeenCalled()
     })

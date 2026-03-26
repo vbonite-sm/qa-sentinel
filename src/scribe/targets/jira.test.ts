@@ -105,7 +105,7 @@ describe('JiraScribeTarget', () => {
       const runData = makeRunData()
       await target.push(runData)
       expect(https.request).toHaveBeenCalledTimes(1)
-      const opts = vi.mocked(https.request).mock.calls[0][0] as { path: string; method: string }
+      const opts = vi.mocked(https.request).mock.calls[0][0] as unknown as { path: string; method: string }
       expect(opts.path).toContain('/rest/api/3/issue')
       expect(opts.method).toBe('POST')
     })
@@ -216,7 +216,7 @@ describe('JiraScribeTarget', () => {
       })
       await target.push(runData)
       expect(https.request).toHaveBeenCalledTimes(2)
-      const transitionCall = vi.mocked(https.request).mock.calls[1][0] as { path: string; method: string }
+      const transitionCall = vi.mocked(https.request).mock.calls[1][0] as unknown as { path: string; method: string }
       expect(transitionCall.path).toContain('/transitions')
       expect(transitionCall.method).toBe('POST')
     })
