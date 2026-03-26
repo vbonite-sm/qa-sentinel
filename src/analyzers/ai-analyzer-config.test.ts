@@ -35,36 +35,7 @@ describe('AIAnalyzer config', () => {
     vi.restoreAllMocks();
   });
 
-  describe('community tier with custom model', () => {
-    it('downgrades to default model and logs warning', async () => {
-      process.env.ANTHROPIC_API_KEY = 'test-key';
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          content: [{ type: 'text', text: 'suggestion' }],
-        }),
-      });
-
-      const analyzer = new AIAnalyzer({
-        ai: { model: 'claude-3-opus-20240229' },
-        tier: 'community',
-      });
-
-      const results = [createTestResult({ status: 'failed', error: 'Error' })];
-      await analyzer.analyzeFailed(results);
-
-      const fetchCall = mockFetch.mock.calls[0];
-      const body = JSON.parse(fetchCall[1].body);
-      expect(body.model).toBe('claude-3-haiku-20240307');
-
-      expect(warnSpy).toHaveBeenCalledWith(
-        'qa-sentinel: Custom AI model requires a Pro license. Using default model.'
-      );
-    });
-  });
-
-  describe('pro tier with custom model', () => {
+  describe('custom model', () => {
     it('uses the custom model directly', async () => {
       process.env.ANTHROPIC_API_KEY = 'test-key';
       mockFetch.mockResolvedValueOnce({
@@ -76,7 +47,6 @@ describe('AIAnalyzer config', () => {
 
       const analyzer = new AIAnalyzer({
         ai: { model: 'claude-3-opus-20240229' },
-        tier: 'pro',
       });
 
       const results = [createTestResult({ status: 'failed', error: 'Error' })];
@@ -89,7 +59,7 @@ describe('AIAnalyzer config', () => {
   });
 
   describe('custom system prompt', () => {
-    it('passes system prompt through when pro tier', async () => {
+    it('passes system prompt through', async () => {
       process.env.ANTHROPIC_API_KEY = 'test-key';
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -100,7 +70,6 @@ describe('AIAnalyzer config', () => {
 
       const analyzer = new AIAnalyzer({
         ai: { systemPrompt: 'You are a test analysis expert.' },
-        tier: 'pro',
       });
 
       const results = [createTestResult({ status: 'failed', error: 'Error' })];
@@ -124,7 +93,6 @@ describe('AIAnalyzer config', () => {
 
       const analyzer = new AIAnalyzer({
         ai: { promptTemplate: 'Fix {{title}} in {{file}} with error: {{error}} using {{framework}}' },
-        tier: 'pro',
       });
 
       const results = [createTestResult({
@@ -144,7 +112,7 @@ describe('AIAnalyzer config', () => {
   });
 
   describe('custom maxTokens', () => {
-    it('uses custom maxTokens when pro tier', async () => {
+    it('uses custom maxTokens', async () => {
       process.env.ANTHROPIC_API_KEY = 'test-key';
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -155,7 +123,6 @@ describe('AIAnalyzer config', () => {
 
       const analyzer = new AIAnalyzer({
         ai: { maxTokens: 1024 },
-        tier: 'pro',
       });
 
       const results = [createTestResult({ status: 'failed', error: 'Error' })];

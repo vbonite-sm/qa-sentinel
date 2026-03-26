@@ -22,7 +22,6 @@ import type {
   TestHistoryEntry,
   RunSummary,
   RunSnapshotFile,
-  LicenseInfo,
   QualityGateResult,
   QuarantineFile,
 } from './types';
@@ -62,7 +61,6 @@ import { exportJunitXml } from './generators/junit-exporter';
 import { exportPdfReport } from './generators/pdf-exporter';
 import { SlackNotifier, TeamsNotifier, NotificationManager, GitHubPRNotifier } from './notifiers';
 import { CloudUploader } from './cloud/uploader';
-import { LicenseValidator } from './license';
 import { QualityGateEvaluator, formatGateReport } from './gates';
 import { QuarantineGenerator } from './quarantine';
 import { generateExecutivePdf, type PdfThemeName } from './generators/executive-pdf';
@@ -105,8 +103,6 @@ class QaSentinel implements Reporter {
   // Cloud
   private cloudUploader: CloudUploader;
 
-  // License
-  private license: LicenseInfo;
   private notificationManager?: NotificationManager;
 
   // State
@@ -123,25 +119,6 @@ class QaSentinel implements Reporter {
 
   constructor(options: QaSentinelOptions = {}) {
     this.options = options;
-
-    // Validate license
-    const validator = new LicenseValidator();
-    this.license = validator.validate(options.licenseKey);
-    if (this.license.error) {
-      console.warn(`⚠️  License: ${this.license.error}`);
-    }
-
-    // Gate theme behind Pro tier
-    if (options.theme && !LicenseValidator.hasFeature(this.license, 'pro')) {
-      console.warn('qa-sentinel: Custom themes require a Pro license. Using defaults.');
-      this.options = { ...this.options, theme: undefined };
-    }
-
-    // Gate branding behind Pro tier
-    if (options.branding && !LicenseValidator.hasFeature(this.license, 'pro')) {
-      console.warn('qa-sentinel: Custom branding requires a Pro license. Using defaults.');
-      this.options = { ...this.options, branding: undefined };
-    }
 
     // Initialize collectors (attachment collector will be re-initialized in onBegin with outputDir)
     // Issue #22: Pass filterPwApiSteps option to StepCollector
@@ -161,12 +138,10 @@ class QaSentinel implements Reporter {
     this.failureClusterer = new FailureClusterer();
     this.aiAnalyzer = new AIAnalyzer({
       ai: options.ai,
-      tier: this.license.tier,
     });
     this.cloudUploader = new CloudUploader(options);
 
-    // Initialize advanced notification manager if configured (Pro feature)
-    if (options.notifications && LicenseValidator.hasFeature(this.license, 'pro')) {
+    if (options.notifications) {
       this.notificationManager = new NotificationManager(options.notifications);
     }
 
@@ -613,13 +588,11 @@ class QaSentinel implements Reporter {
 	      }
 	    }
 
-    // Premium feature flags (needed before HTML generation)
-    const hasPro = LicenseValidator.hasFeature(this.license, 'pro');
     const exportDir = path.dirname(outputPath);
 
-    // Quality gates (Pro feature) - evaluate BEFORE HTML generation so results embed in report
+    // Quality gates - evaluate BEFORE HTML generation so results embed in report
     let qualityGateResult: QualityGateResult | undefined;
-    if (this.options.qualityGates && hasPro) {
+    if (this.options.qualityGates) {
       try {
         const evaluator = new QualityGateEvaluator();
         qualityGateResult = evaluator.evaluate(this.options.qualityGates, this.results, comparison);
@@ -628,10 +601,10 @@ class QaSentinel implements Reporter {
       }
     }
 
-    // Quarantine (Pro feature) - evaluate BEFORE HTML generation so badges/cards embed in report
+    // Quarantine - evaluate BEFORE HTML generation so badges/cards embed in report
     let quarantineResult: QuarantineFile | null = null;
     let quarantinedTestIds: Set<string> | undefined;
-    if (this.options.quarantine?.enabled && hasPro) {
+    if (this.options.quarantine?.enabled) {
       try {
         const generator = new QuarantineGenerator(this.options.quarantine);
         quarantineResult = generator.generate(this.results, exportDir);
@@ -652,7 +625,6 @@ class QaSentinel implements Reporter {
 	      historyRunSnapshots,
 	      failureClusters,
 	      ciInfo: this.ciInfo,
-	      licenseTier: this.license.tier,
 	      outputBasename: path.basename(outputPath, '.html'),
 	      qualityGateResult,
 	      quarantinedTestIds,
@@ -670,7 +642,7 @@ class QaSentinel implements Reporter {
     console.log(`   Or open directly: open "${outputPath}"`);
 
 
-    if (this.options.exportJson && hasPro) {
+    if (this.options.exportJson) {
       try {
         const jsonPath = exportJsonData(
           this.results,
@@ -686,31 +658,25 @@ class QaSentinel implements Reporter {
       } catch (err) {
         console.warn('⚠️  JSON export failed:', err);
       }
-    } else if (this.options.exportJson && !hasPro) {
-      console.log('   JSON export requires a Pro license — see github.com/vbonite-sm/qa-sentinel#license');
     }
 
-    if (this.options.exportJunit && hasPro) {
+    if (this.options.exportJunit) {
       try {
         const junitPath = exportJunitXml(this.results, this.options, exportDir, htmlData.outputBasename);
         console.log(`   JUnit XML: ${junitPath}`);
       } catch (err) {
         console.warn('⚠️  JUnit export failed:', err);
       }
-    } else if (this.options.exportJunit && !hasPro) {
-      console.log('   JUnit export requires a Pro license — see github.com/vbonite-sm/qa-sentinel#license');
     }
 
-    if (this.options.exportPdf && hasPro) {
+    if (this.options.exportPdf) {
       try {
         if (this.options.exportPdfFull) {
-          // Legacy: full HTML-to-PDF dump via playwright-core
           const pdfPath = await exportPdfReport(outputPath, this.options, exportDir);
           if (pdfPath) {
             console.log(`   PDF report (full): ${pdfPath}`);
           }
         } else {
-          // Default: executive summary PDFs via pdfkit (3 themed variants)
           const pdfData = {
             results: this.results,
             history: this.historyCollector.getHistory(),
@@ -734,8 +700,6 @@ class QaSentinel implements Reporter {
       } catch (err) {
         console.warn('⚠️  PDF export failed:', err);
       }
-    } else if (this.options.exportPdf && !hasPro) {
-      console.log('   PDF export requires a Pro license — see github.com/vbonite-sm/qa-sentinel#license');
     }
 
     // Update history
@@ -747,11 +711,9 @@ class QaSentinel implements Reporter {
       (r.status === 'failed' || r.status === 'timedOut')
     ).length;
 
-    // Advanced notification manager (Pro feature) takes precedence
     if (this.notificationManager) {
       await this.notificationManager.notify(this.results, this.startTime, comparison);
     } else {
-      // Legacy notification path (free tier)
       if (failed > 0) {
         await this.slackNotifier.notify(this.results);
         await this.teamsNotifier.notify(this.results);
@@ -767,24 +729,20 @@ class QaSentinel implements Reporter {
       }
     }
 
-    // Quality gates (Pro feature) - log results and set exitCode
+    // Quality gates — log results and set exitCode
     if (qualityGateResult) {
       console.log(formatGateReport(qualityGateResult));
       if (!qualityGateResult.passed) {
         process.exitCode = 1;
       }
-    } else if (this.options.qualityGates && !hasPro) {
-      console.log('   Quality gates require a Pro license — see github.com/vbonite-sm/qa-sentinel#license');
     }
 
-    // Quarantine (Pro feature) - log results (file already written above)
+    // Quarantine — log results (file already written above)
     if (quarantineResult) {
       const qPath = new QuarantineGenerator(this.options.quarantine!).getOutputPath(exportDir);
       console.log(`   Quarantine: ${quarantineResult.entries.length} test(s) quarantined -> ${qPath}`);
-    } else if (this.options.quarantine?.enabled && hasPro) {
+    } else if (this.options.quarantine?.enabled) {
       console.log('   Quarantine: no tests exceed flakiness threshold');
-    } else if (this.options.quarantine?.enabled && !hasPro) {
-      console.log('   Quarantine requires a Pro license — see github.com/vbonite-sm/qa-sentinel#license');
     }
 
     // Upload to qa-sentinel Cloud if enabled
@@ -797,10 +755,6 @@ class QaSentinel implements Reporter {
       }
     }
 
-    // Gentle upsell for community tier
-    if (this.license.tier === 'community') {
-      console.log(`\n   Pro features available — see github.com/vbonite-sm/qa-sentinel#license`);
-    }
   }
 
   // ============================================================================

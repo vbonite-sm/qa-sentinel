@@ -1,8 +1,7 @@
-import type { TestResultData, TestRecommendation, FailureCluster, SuiteStats, AIConfig, LicenseTier } from '../types';
+import type { TestResultData, TestRecommendation, FailureCluster, SuiteStats, AIConfig } from '../types';
 
 export interface AIAnalyzerConfig {
   ai?: AIConfig;
-  tier?: LicenseTier;
 }
 
 // Free-tier model defaults
@@ -20,38 +19,24 @@ export class AIAnalyzer {
   private openaiKey?: string;
   private geminiKey?: string;
   private aiConfig?: AIConfig;
-  private tier: LicenseTier;
 
   constructor(config?: AIAnalyzerConfig) {
     this.anthropicKey = process.env.ANTHROPIC_API_KEY;
     this.openaiKey = process.env.OPENAI_API_KEY;
     this.geminiKey = process.env.GEMINI_API_KEY;
     this.aiConfig = config?.ai;
-    this.tier = config?.tier ?? 'community';
   }
 
   private getModel(provider: 'anthropic' | 'openai' | 'gemini'): string {
-    if (this.aiConfig?.model && (this.tier === 'pro' || this.tier === 'team')) {
-      return this.aiConfig.model;
-    }
-    if (this.aiConfig?.model && this.tier === 'community') {
-      console.warn('qa-sentinel: Custom AI model requires a Pro license. Using default model.');
-    }
-    return FREE_MODELS[provider];
+    return this.aiConfig?.model ?? FREE_MODELS[provider];
   }
 
   private getMaxTokens(defaultTokens: number): number {
-    if (this.aiConfig?.maxTokens && (this.tier === 'pro' || this.tier === 'team')) {
-      return this.aiConfig.maxTokens;
-    }
-    return defaultTokens;
+    return this.aiConfig?.maxTokens ?? defaultTokens;
   }
 
   private getSystemPrompt(): string | undefined {
-    if (this.aiConfig?.systemPrompt && (this.tier === 'pro' || this.tier === 'team')) {
-      return this.aiConfig.systemPrompt;
-    }
-    return undefined;
+    return this.aiConfig?.systemPrompt;
   }
 
   /**
@@ -194,8 +179,7 @@ export class AIAnalyzer {
    * Build prompt for individual test failure
    */
   private buildFailurePrompt(test: TestResultData): string {
-    // Use custom template if available (Pro/Team tier)
-    if (this.aiConfig?.promptTemplate && (this.tier === 'pro' || this.tier === 'team')) {
+    if (this.aiConfig?.promptTemplate) {
       return this.aiConfig.promptTemplate
         .replace(/\{\{title\}\}/g, test.title)
         .replace(/\{\{file\}\}/g, test.file)
