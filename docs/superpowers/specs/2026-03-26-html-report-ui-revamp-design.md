@@ -22,7 +22,7 @@ Pure presentation layer. Zero changes to report logic, data collection, types, o
 
 **Files changed:**
 - `src/generators/html-generator.ts` — CSS variables, HTML template, icon helper, Overview layout, sidebar hierarchy
-- `src/generators/card-generator.ts` — test card left-border strip, emoji removal
+- `src/generators/card-generator.ts` — test card left-border strip; emoji removal from test cards, attachment viewer links (`🔍 View`), browser-name detection icons, and file group headers (`📄`)
 
 **Files untouched:**
 - All analyzers, collectors, types, utilities
@@ -88,6 +88,12 @@ Both loaded via a single Google Fonts `<link>` with `preconnect` optimization. R
 | `--accent-red` | `#dd3344` | `#DC2626` | red-600 |
 | `--accent-yellow` | `#cc9900` | `#D97706` | amber-600 |
 | `--accent-blue` | `#0077cc` | `#2563EB` | blue-600 |
+| `--accent-green-dim` | `#008844` | `#047857` | emerald-700 |
+| `--accent-red-dim` | `#bb2233` | `#B91C1C` | red-700 |
+| `--accent-yellow-dim` | `#aa7700` | `#B45309` | amber-700 |
+| `--accent-blue-dim` | `#005599` | `#1D4ED8` | blue-700 |
+| `--accent-purple` | `#8844cc` | `#7C3AED` | violet-600 |
+| `--accent-orange` | `#dd6622` | `#EA580C` | orange-600 |
 
 Light mode cards get a shadow to restore depth (replaces invisible border):
 ```css
@@ -121,16 +127,18 @@ Every interactive element uses OS-rendered emoji. Rendering is inconsistent acro
 
 ### Solution: Lucide Icons (inline SVG)
 
+**Lucide version:** `0.511.0` — pinned to avoid the v0.391 bulk-rename of `-2` suffixed icons. All SVGs are inlined in the generated HTML; no runtime HTTP request.
+
 A `generateIcons()` helper function returns a typed map of `name → svgString`. Every emoji reference in the template is replaced with `${icons.name}`. No external HTTP requests — all SVG is inlined in the generated HTML output.
 
-**Icon mapping:**
+**Icon mapping** (all names verified against Lucide v0.511.0):
 
 | Element | Lucide icon name |
 |---------|-----------------|
 | Sidebar toggle | `panel-left` |
 | Search | `search` |
 | Export | `download` |
-| JSON export | `file-json` |
+| JSON export | `file-braces` |
 | CSV export | `file-spreadsheet` |
 | PDF export | `file-text` |
 | Summary card export | `clipboard-list` |
@@ -150,14 +158,14 @@ A `generateIcons()` helper function returns a typed map of `name → svgString`.
 | Theme: nord | `snowflake` |
 | Theme: midnight | `star` |
 | Duration | `clock` |
-| File | `file-code-2` |
+| File | `file-code` |
 | Clear filters | `x` |
-| Passed | `check-circle-2` |
+| Passed | `circle-check` |
 | Failed | `x-circle` |
-| Flaky | `alert-triangle` |
+| Flaky | `triangle-alert` |
 | Skipped | `minus-circle` |
 | Empty state: no results | `search-x` |
-| Empty state: select test | `test-tube-2` |
+| Empty state: select test | `test-tube-diagonal` |
 | Quarantined | `shield-off` |
 | New failure | `alert-circle` |
 | Fixed | `check-check` |
@@ -173,7 +181,7 @@ The current Overview is a flat developer-centric scroll. The redesign splits it 
 
 **Zone 1 — Executive Summary** (stakeholder-readable in 10 seconds)
 
-- **Health Score**: A composite number (0–100) derived from pass rate, stability grade distribution, and flakiness rate — already computable from existing data. Plain-English verdict: "Healthy / At Risk / Critical".
+- **Health Score**: Uses the existing `suiteHealthScore` already computed in `generateOverviewContent()` — formula: `(passRate × 0.5) + (flakinessScore × 0.3) + (performanceScore × 0.2)`. Plain-English verdict: "Healthy / At Risk / Critical". No formula changes; presentation only.
 - **Pass Rate**: Large prominent number with delta vs previous run (from `comparison` data).
 - **Run Duration**: Total duration with test count.
 - **Quality Gate badge**: Prominent pass/fail badge when `qualityGateResult` is present.
@@ -249,5 +257,7 @@ Three targeted changes only:
 - [ ] Inter + JetBrains Mono loaded via Google Fonts `<link>`
 - [ ] Z-index scale established (20/30/50/60)
 - [ ] `⌘K` / `Ctrl+K` platform-detected at runtime
+- [ ] All emoji removed from `card-generator.ts` (test cards, attachment viewer, browser icons, file group headers)
+- [ ] `.main-content` has `overflow-y: auto`; `body` does not use `overflow: hidden`
 - [ ] All existing vitest tests still pass
 - [ ] No changes outside `html-generator.ts` and `card-generator.ts`
