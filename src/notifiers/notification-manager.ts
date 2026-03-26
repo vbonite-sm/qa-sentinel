@@ -4,6 +4,7 @@ import { TeamsNotifier } from './teams-notifier';
 import { PagerDutyNotifier } from './pagerduty-notifier';
 import { EmailNotifier } from './email-notifier';
 import { CustomWebhookNotifier } from './custom-webhook-notifier';
+import { GitHubPRNotifier } from './github-pr-notifier';
 
 interface NotificationContext {
   total: number;
@@ -162,6 +163,22 @@ export class NotificationManager {
               }
             }
             await notifier.send(payload, parsedHeaders);
+            break;
+          }
+          case 'github': {
+            // Reads GITHUB_TOKEN and GITHUB_REPOSITORY from env; token can be
+            // overridden via config.config.token for non-Actions environments.
+            const token = config.config.token || process.env.GITHUB_TOKEN;
+            const repo  = config.config.repo  || process.env.GITHUB_REPOSITORY;
+            const prNum = config.config.prNumber ? parseInt(config.config.prNumber, 10) : undefined;
+            if (token && repo && prNum) {
+              const notifier = new GitHubPRNotifier(
+                token, repo, prNum, process.env.GITHUB_RUN_ID,
+              );
+              await notifier.notify(results, startTime, comparison);
+            } else {
+              console.warn('qa-sentinel: GitHub channel requires token, repo, and prNumber in config');
+            }
             break;
           }
         }

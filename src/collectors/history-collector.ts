@@ -9,8 +9,8 @@ import { sanitizeFilename } from '../utils/sanitizers';
  */
 export class HistoryCollector {
   private history: TestHistory = { runs: [], tests: {}, summaries: [] };
-  private options: Required<Omit<QaSentinelOptions, 'slackWebhook' | 'teamsWebhook' | 'baselineRunId' | 'networkLogFilter' | 'apiKey' | 'projectId' | 'cloudEndpoint' | 'projectName' | 'thresholds' | 'maxEmbeddedSize' | 'runId' | 'licenseKey' | 'exportJson' | 'exportPdf' | 'exportJunit' | 'exportPdfFull' | 'theme' | 'notifications' | 'ai' | 'branding' | 'qualityGates' | 'quarantine'>> &
-                   Pick<QaSentinelOptions, 'slackWebhook' | 'teamsWebhook' | 'baselineRunId' | 'networkLogFilter' | 'apiKey' | 'projectId' | 'cloudEndpoint' | 'projectName' | 'thresholds' | 'maxEmbeddedSize' | 'runId' | 'licenseKey' | 'exportJson' | 'exportPdf' | 'exportJunit' | 'exportPdfFull' | 'theme' | 'notifications' | 'ai' | 'branding' | 'qualityGates' | 'quarantine'>;
+  private options: Required<Omit<QaSentinelOptions, 'slackWebhook' | 'teamsWebhook' | 'baselineRunId' | 'networkLogFilter' | 'apiKey' | 'projectId' | 'cloudEndpoint' | 'projectName' | 'thresholds' | 'maxEmbeddedSize' | 'runId' | 'licenseKey' | 'exportJson' | 'exportPdf' | 'exportJunit' | 'exportPdfFull' | 'theme' | 'notifications' | 'ai' | 'branding' | 'qualityGates' | 'quarantine' | 'githubPRComments'>> &
+                   Pick<QaSentinelOptions, 'slackWebhook' | 'teamsWebhook' | 'baselineRunId' | 'networkLogFilter' | 'apiKey' | 'projectId' | 'cloudEndpoint' | 'projectName' | 'thresholds' | 'maxEmbeddedSize' | 'runId' | 'licenseKey' | 'exportJson' | 'exportPdf' | 'exportJunit' | 'exportPdfFull' | 'theme' | 'notifications' | 'ai' | 'branding' | 'qualityGates' | 'quarantine' | 'githubPRComments'>;
   private outputDir: string;
   private currentRun: RunMetadata;
   private startTime: number;
@@ -80,6 +80,7 @@ export class HistoryCollector {
       qualityGates: options.qualityGates,
       quarantine: options.quarantine,
       exportPdfFull: options.exportPdfFull,
+      githubPRComments: options.githubPRComments,
     };
     this.outputDir = outputDir;
     this.currentRun = {
