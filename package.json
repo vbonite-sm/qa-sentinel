@@ -19,6 +19,10 @@
     "./quarantine": {
       "types": "./dist/quarantine/quarantine-helper.d.ts",
       "default": "./dist/quarantine/quarantine-helper.js"
+    },
+    "./fixtures": {
+      "types": "./dist/fixtures.d.ts",
+      "default": "./dist/fixtures.js"
     }
   },
   "files": [
