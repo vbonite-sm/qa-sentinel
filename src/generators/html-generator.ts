@@ -760,7 +760,7 @@ ${reportSubtitle ? `            <span class="logo-subtitle">${escapeHtml(reportS
         </nav>
       </div>
       <div class="top-bar-right">
-        <button class="search-trigger" onclick="openSearch()" title="Search (⌘K)" aria-label="Search tests">
+        <button class="search-trigger" onclick="openSearch()" title="Search" aria-label="Search tests">
           <span class="search-icon-btn">${icons['search']}</span>
           <span class="search-label">Search...</span>
           <kbd class="search-kbd kbd-hint">⌘K</kbd>
@@ -7881,7 +7881,6 @@ function generateScripts(
 
     function setTheme(theme) {
       const root = document.documentElement;
-      const icon = document.getElementById('themeIcon');
       const label = document.getElementById('themeLabel');
       const cfg = getThemeCfg(theme);
 
@@ -7894,7 +7893,6 @@ function generateScripts(
       } else {
         root.removeAttribute('data-theme');
       }
-      if (icon) { icon.textContent = ''; icon.insertAdjacentHTML('beforeend', cfg.icon); }
       if (label) label.textContent = cfg.label;
       localStorage.setItem('theme', theme);
       showToast(cfg.attr ? cfg.label + ' theme' : 'Using system theme', 'info');
@@ -7904,7 +7902,6 @@ function generateScripts(
     // Initialize theme from localStorage
     (function initTheme() {
       const saved = localStorage.getItem('theme') || 'system';
-      const icon = document.getElementById('themeIcon');
       const label = document.getElementById('themeLabel');
       const cfg = getThemeCfg(saved);
 
@@ -7915,7 +7912,6 @@ function generateScripts(
       if (cfg.attr) {
         document.documentElement.setAttribute('data-theme', cfg.attr);
       }
-      if (icon) { icon.textContent = ''; icon.insertAdjacentHTML('beforeend', cfg.icon); }
       if (label) label.textContent = cfg.label;
     })();
 
