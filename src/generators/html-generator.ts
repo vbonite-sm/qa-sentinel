@@ -630,7 +630,7 @@ export function generateHtml(data: HtmlGeneratorData): string {
   const fontLinks = cspSafe ? '' : `
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">`;
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">`;
 
   // Stats data for JavaScript
   const statsData = JSON.stringify({ passed, failed, skipped, flaky, slow, newTests, total, passRate, gradeA, gradeB, gradeC, gradeD, gradeF, totalDuration });
@@ -680,7 +680,7 @@ export function generateHtml(data: HtmlGeneratorData): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Test Report</title>${fontLinks}
+  <title>${reportTitle}</title>${fontLinks}
   <style>
 ${generateStyles(passRate, cspSafe, options.theme)}
   </style>
@@ -1188,7 +1188,7 @@ function generateStyles(passRate: number, cspSafe: boolean = false, theme?: Them
   // Font families - use system fonts in CSP-safe mode
   const primaryFont = cspSafe
     ? "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
-    : "'Space Grotesk', system-ui, sans-serif";
+    : "'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
   const monoFont = cspSafe
     ? "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace"
     : "'JetBrains Mono', ui-monospace, monospace";

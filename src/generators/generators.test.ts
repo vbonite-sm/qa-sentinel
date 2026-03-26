@@ -245,6 +245,42 @@ describe('html-generator', () => {
       // That's intentional - we only strip from JSON to reduce size
     });
 
+    it('loads Inter and JetBrains Mono from Google Fonts', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('fonts.googleapis.com');
+      expect(html).toContain('Inter');
+      expect(html).toContain('JetBrains+Mono');
+    });
+
+    it('title tag reflects reportTitle from branding config', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: { branding: { title: 'My Suite' } },
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('<title>My Suite</title>');
+      expect(html).not.toContain('<title>Smart Test Report</title>');
+    });
+
+    it('default title is Sentinel when no branding title set', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('<title>Sentinel</title>');
+    });
+
     it('default dark theme uses slate-900 background, not neon green', () => {
       const data: HtmlGeneratorData = {
         results: [],
