@@ -570,3 +570,24 @@ export interface FixtureData {
   selectorError?: string;
   failureDetected: boolean;
 }
+
+// ============================================================================
+// Sentinel Sage Types
+// ============================================================================
+
+export interface TrendSummary {
+  currentGrade: string;
+  previousGrade?: string;
+  gradeDelta: number;
+  flakinessTrend: 'improving' | 'stable' | 'degrading';
+  newFailures: string[];
+  recoveredTests: string[];
+  totalRuns: number;
+}
+
+export interface AIAnalysis {
+  summary: string;
+  rootCauses: string[];
+  recommendations: string[];
+  generatedAt: string;
+}
