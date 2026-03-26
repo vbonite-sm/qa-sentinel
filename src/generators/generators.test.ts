@@ -408,6 +408,19 @@ describe('html-generator', () => {
       expect(html).toContain('[data-theme="sage"]');
       expect(html).not.toContain('[data-theme="forest"]');
     });
+
+    it('uses SVG icon elements in the generated HTML', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      // generateIcons() is called and SVG output is embedded
+      expect(html).toContain('<svg xmlns="http://www.w3.org/2000/svg"');
+      expect(html).toContain('class="icon"');
+    });
   });
 });
 
