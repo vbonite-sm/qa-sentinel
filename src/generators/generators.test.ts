@@ -245,6 +245,43 @@ describe('html-generator', () => {
       // That's intentional - we only strip from JSON to reduce size
     });
 
+    it('default dark theme uses slate-900 background, not neon green', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('--bg-primary: #0F172A');
+      expect(html).toContain('--accent-green: #10B981');
+      expect(html).not.toContain('#00ff88');
+      expect(html).not.toContain('#0a0a0f');
+    });
+
+    it('light theme uses WCAG AA compliant text tokens', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: { theme: { preset: 'light' } },
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('--text-secondary: #475569');
+      expect(html).toContain('--text-muted: #64748B');
+    });
+
+    it('light mode cards have box-shadow for depth', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: { theme: { preset: 'light' } },
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('box-shadow: 0 1px 3px rgba(15,23,42,0.06)');
+    });
+
     it('handles many tests without exceeding string limits', () => {
       // Create 100 tests with screenshots (simulating a medium-sized suite)
       const results = Array.from({ length: 100 }, (_, i) =>
