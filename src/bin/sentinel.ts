@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander'
 import { runTest } from '../cli/commands/test'
+import { runHeal } from '../cli/commands/heal'
 import { createStub } from '../cli/commands/stubs'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -29,7 +30,9 @@ program
 program
   .command('heal')
   .description('Apply pending selector healing suggestions')
-  .action(createStub({ name: 'heal', requirement: 'Sentinel Agent (Sub-project 2)' }))
+  .action(async () => {
+    await runHeal()
+  })
 
 program
   .command('ask [query]')
