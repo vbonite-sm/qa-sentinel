@@ -147,4 +147,11 @@ describe('applySeerFilter', () => {
     const matches = pattern.match(/login test/g)
     expect(matches).toHaveLength(1)
   })
+
+  it('returns original args when history.json contains corrupt JSON', async () => {
+    fs.writeFileSync(path.join(tmpDir, '.sentinel', 'history.json'), 'not valid json {{')
+    const args = ['--grep', '@smoke']
+    const result = await applySeerFilter(args, tmpDir, 0.8)
+    expect(result).toEqual(args)
+  })
 })

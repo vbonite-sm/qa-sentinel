@@ -31,6 +31,19 @@ describe('scoreTest', () => {
     expect(scoreTest(history)).toBeGreaterThan(0.5)
   })
 
+  it('one recent pass cannot overcome four old failures (score < 0.5)', () => {
+    // weights: fail=1, fail=2, fail=3, fail=4, pass=5; score = 5/15 ≈ 0.33
+    // Confirms that 4 failures outweigh 1 pass even with recency boost
+    const history = [
+      makeEntry(false),
+      makeEntry(false),
+      makeEntry(false),
+      makeEntry(false),
+      makeEntry(true),  // most recent
+    ]
+    expect(scoreTest(history)).toBeLessThan(0.5)
+  })
+
   it('uses at most the last 10 entries', () => {
     // 11 entries: 10 old failures + 1 recent pass (most recent)
     const history = [
