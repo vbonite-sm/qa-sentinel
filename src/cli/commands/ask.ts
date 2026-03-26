@@ -66,7 +66,7 @@ export async function runAsk(
 
   rl.prompt()
 
-  rl.on('line', async (line: string) => {
+  rl.on('line', (line: string) => {
     const trimmed = line.trim()
     if (!trimmed) {
       rl.prompt()
@@ -76,14 +76,19 @@ export async function runAsk(
       rl.close()
       return
     }
-    try {
-      const answer = await askClaude(context, trimmed)
-      process.stdout.write('\n' + answer + '\n\n')
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
-      process.stderr.write('qa-sentinel: ' + msg + '\n')
-    }
-    rl.prompt()
+    rl.pause()
+    askClaude(context, trimmed)
+      .then(answer => {
+        process.stdout.write('\n' + answer + '\n\n')
+      })
+      .catch(err => {
+        const msg = err instanceof Error ? err.message : String(err)
+        process.stderr.write('qa-sentinel: ' + msg + '\n')
+      })
+      .finally(() => {
+        rl.resume()
+        rl.prompt()
+      })
   })
 
   await new Promise<void>(resolve => rl.on('close', resolve))
