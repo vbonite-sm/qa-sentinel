@@ -542,3 +542,31 @@ export interface RunManifest {
   exitCode: number;
   durationMs: number;
 }
+
+// ============================================================================
+// Sentinel Agent Types
+// ============================================================================
+
+export interface HealSuggestion {
+  testId: string;
+  testTitle: string;
+  brokenSelector: string;
+  suggestedSelector: string;
+  confidence: number;
+  detectedAt: string;
+  status: 'pending' | 'applied' | 'dismissed';
+  appliedAt?: string;
+  filePath: string;
+  lineNumber?: number;
+}
+
+export interface FixtureData {
+  testId: string;
+  testTitle: string;
+  workerIndex: number;
+  domSnapshot?: string;
+  heapDeltaMB?: number;
+  consoleErrors: string[];
+  selectorError?: string;
+  failureDetected: boolean;
+}
