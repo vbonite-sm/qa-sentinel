@@ -475,6 +475,7 @@ function generateOverviewContent(
       <div class="exec-stat-card">
         <div class="exec-stat-score">${passRate}%</div>
         <div class="exec-stat-label">Pass Rate</div>
+        ${comparison ? `<div class="exec-stat-delta">${passRate > Math.round((comparison.passRate ?? 0)) ? '↑' : passRate < Math.round((comparison.passRate ?? 0)) ? '↓' : '→'} vs last run</div>` : ''}
       </div>
       <div class="exec-stat-card">
         <div class="exec-stat-score">${formatDuration(totalDuration)}</div>
@@ -2368,6 +2369,12 @@ ${highContrastOverride}${customOverrides}
     .exec-stat-verdict {
       font-size: 0.875rem;
       font-weight: 600;
+      margin-top: 4px;
+    }
+
+    .exec-stat-delta {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
       margin-top: 4px;
     }
 
