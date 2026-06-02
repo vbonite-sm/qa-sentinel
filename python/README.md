@@ -1,10 +1,10 @@
-# Playwright Smart Reporter - Python
+# qa-sentinel - Python
 
-Python integration for [Playwright Smart Reporter](https://github.com/qa-gary-parker/qa-sentinel) - brings AI-powered failure analysis, flakiness detection, and beautiful HTML reports to your pytest test suites.
+Python integration for [qa-sentinel](https://github.com/vbonite-sm/qa-sentinel) - brings AI-powered failure analysis, flakiness detection, and beautiful HTML reports to your pytest test suites.
 
 ## Features
 
-All the features from the main Playwright Smart Reporter, now available for Python/pytest:
+All the features from the main qa-sentinel package, now available for Python/pytest:
 
 - **AI Failure Analysis** - Claude/OpenAI/Gemini powered suggestions
 - **Smart Analytics** - Flakiness detection, performance regression alerts
@@ -90,7 +90,7 @@ pytest --headed --qa-sentinel
 ## How It Works
 
 1. **pytest** runs your tests with JSON reporting enabled
-2. **Converter** transforms pytest JSON to Playwright Smart Reporter format
+2. **Converter** transforms pytest JSON to qa-sentinel format
 3. **Node.js bridge** calls the bundled HTML generator
 4. **Output** interactive HTML report
 
@@ -130,5 +130,5 @@ MIT - See [LICENSE](LICENSE).
 
 ## Related
 
-- [Playwright Smart Reporter (Node.js)](https://github.com/qa-gary-parker/qa-sentinel) - Main package
+- [qa-sentinel (Node.js)](https://github.com/vbonite-sm/qa-sentinel) - Main package
 - [Playwright for Python](https://playwright.dev/python/) - Playwright Python bindings

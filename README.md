@@ -1,8 +1,6 @@
 # qa-sentinel
 
-A Playwright-first test intelligence platform with AI-powered failure analysis, flakiness detection, performance regression alerts, predictive scoring, and a modern interactive dashboard. Community + Pro tiers — same npm package, Pro features unlock with a license key.
-
-> **Attribution:** qa-sentinel is a fork of [playwright-smart-reporter](https://github.com/qa-gary-parker/playwright-smart-reporter) by [Gary Parker](https://github.com/qa-gary-parker), used under the MIT license.
+The open-source test intelligence layer for Playwright — AI-powered failure analysis, flakiness detection, self-healing selectors, performance regression alerts, and a modern interactive dashboard. Fully self-hostable: no license keys, no tier gates, no lock-in.
 
 ![Report Overview](https://raw.githubusercontent.com/vbonite-sm/qa-sentinel/main/images/report-overview-dark.png)
 *Dashboard with quality gates, quarantine, suite health grade, attention alerts, and failure clusters*
@@ -33,77 +31,36 @@ export default defineConfig({
 
 Run your tests and open the generated `qa-sentinel-report.html`.
 
-## Community vs Pro
-
-The community tier includes everything you need for local test reporting. Pro adds premium themes, PDF exports, quality gates, and more — activated with a license key.
-
-| Feature | Community | Pro |
-|---|:---:|:---:|
-| AI failure analysis (Claude/OpenAI/Gemini) | ✅ | ✅ |
-| Stability grades (A+ to F) | ✅ | ✅ |
-| Flakiness detection & history tracking | ✅ | ✅ |
-| Run comparison & trend analytics | ✅ | ✅ |
-| Artifact gallery & trace viewer | ✅ | ✅ |
-| Network logs & step timeline | ✅ | ✅ |
-| CI auto-detection & notifications | ✅ | ✅ |
-| 3 themes (System, Light, Dark) | ✅ | ✅ |
-| 6 additional Pro themes | | ✅ |
-| Executive PDF export (3 variants) | | ✅ |
-| JSON + JUnit export | | ✅ |
-| Quality gates (fail builds on thresholds) | | ✅ |
-| Flaky test quarantine | | ✅ |
-| Custom report branding (title, footer, colours) | | ✅ |
-| Custom theme colours | | ✅ |
-| AI health digest | | ✅ |
-
-### Activating Pro
-
-Set your license key via environment variable or config:
-
-```bash
-# Environment variable
-export QA_SENTINEL_LICENSE_KEY=your-license-key
-```
-
-```typescript
-// Or in playwright.config.ts
-reporter: [
-  ['qa-sentinel', {
-    outputFile: 'qa-sentinel-report.html',
-    licenseKey: 'your-license-key',
-  }],
-]
-```
-
 ## Features
 
 ### Core Analysis
+
 - **AI Failure Analysis** — Claude/OpenAI/Gemini-powered fix suggestions with batched analysis for large suites
-- **Flakiness Detection** — Historical tracking to identify unreliable tests (not single-run retries)
-- **Performance Regression Alerts** — Warns when tests get significantly slower than average
+- **Flakiness Detection** — Historical tracking to identify unreliable tests across runs (not single-run retries)
+- **Performance Regression Alerts** — Warns when tests get significantly slower than their historical average
 - **Stability Scoring** — Composite health metrics (0-100 with grades A+ to F)
-- **Failure Clustering** — Group similar failures by error type with error previews and AI analysis
-- **Test Retry Analysis** — Track tests that frequently need retries
+- **Failure Clustering** — Groups similar failures by error type with per-cluster AI analysis
+- **Retry Analysis** — Tracks tests that frequently need retries
 
 ### Interactive Dashboard
+
 - **Sidebar Navigation** — Overview, Tests, Trends, Comparison, Gallery views
-- **Theme Support** — Light, dark, and system theme with persistent preference
+- **Theme Support** — Light, dark, system, and 6 additional presets (Ocean, Sunset, Dracula, Cyberpunk, Forest, Rose)
 - **Keyboard Shortcuts** — `1-5` switch views, `j/k` navigate tests, `f` focus search, `e` export summary
-- **Virtual Scroll** — Pagination for large test suites (500+ tests)
-- **Exportable Summary Card** — One-click export of test run summary
+- **Virtual Scroll** — Pagination for large test suites
 
 ### Test Details
 
 ![Test Expanded](https://raw.githubusercontent.com/vbonite-sm/qa-sentinel/main/images/test-expanded-dark.png)
 *Expanded test card with step timeline, network logs, run history, and quarantine badge*
 
-- **Step Timing Breakdown** — Visual bars highlighting the slowest steps
-- **Flamechart Visualisation** — Colour-coded timeline bars (navigation, assertion, action, API, wait)
-- **Network Logs** — API calls with status codes, timing, and payload details (from trace files)
-- **Inline Trace Viewer** — View traces directly in the dashboard
+- **Step Timing Breakdown** — Visual bars highlighting the slowest step
+- **Flamechart Visualisation** — Colour-coded timeline (navigation, assertion, action, API, wait)
+- **Network Logs** — API calls with status codes, timing, and payload details extracted from trace files
+- **Inline Trace Viewer** — Film strip, before/after screenshots, network waterfall, console messages
 - **Screenshot Embedding** — Failure screenshots displayed inline
 - **Browser & Project Badges** — Shows which browser/project each test ran against
-- **Annotation Support** — `@slow`, `@fixme`, `@skip`, `@issue`, custom annotations with styled badges
+- **Annotation Support** — `@slow`, `@fixme`, `@skip`, `@issue`, `@flaky`, `@bug`, `@todo`, and custom annotations
 
 ### Trend Analytics
 
@@ -132,143 +89,186 @@ qa-sentinel tracks flakiness **across runs**, not within a single run:
 | **Criteria** | Fails then passes on retry | Failed 30%+ of the time historically |
 | **Use Case** | Immediate retry success | Chronically unreliable tests |
 
-Indicators:
-- **Stable** (<10% failure rate) — **Unstable** (10-30%) — **Flaky** (>30%) — **New** (no history)
+Indicators: **Stable** (<10% failure rate) — **Unstable** (10-30%) — **Flaky** (>30%) — **New** (no history)
 
-## Pro Features
+---
 
-### Pro Themes
+## Sentinel CLI
 
-6 additional themes beyond the 3 community ones: **Ocean**, **Sunset**, **Dracula**, **Cyberpunk**, **Forest**, and **Rose**. Set via config:
-
-```typescript
-reporter: [
-  ['qa-sentinel', {
-    outputFile: 'qa-sentinel-report.html',
-    licenseKey: process.env.QA_SENTINEL_LICENSE_KEY,
-    theme: 'dracula',  // ocean, sunset, dracula, cyberpunk, forest, rose
-  }],
-]
-```
-
-### Executive PDF Export
-
-Generate professional PDF reports in 3 themed variants: **Corporate**, **Minimal**, and **Dark**. Includes a style picker modal in the HTML report.
-
-```typescript
-reporter: [
-  ['qa-sentinel', {
-    outputFile: 'qa-sentinel-report.html',
-    licenseKey: process.env.QA_SENTINEL_LICENSE_KEY,
-    pdfExport: true,
-    pdfStyle: 'corporate',  // corporate, minimal, dark
-  }],
-]
-```
-
-### Quality Gates
-
-Fail CI builds when test results don't meet your thresholds:
-
-```typescript
-reporter: [
-  ['qa-sentinel', {
-    outputFile: 'qa-sentinel-report.html',
-    licenseKey: process.env.QA_SENTINEL_LICENSE_KEY,
-    qualityGates: {
-      minPassRate: 95,
-      maxFlakyRate: 5,
-      maxDuration: 300,       // seconds
-      minStabilityScore: 70,
-    },
-  }],
-]
-```
-
-Or run as a standalone CLI check:
+The `sentinel` CLI wraps Playwright and adds intelligence: predictive filtering, healing, AI queries, and integration pushes.
 
 ```bash
-npx qa-sentinel gate --pass-rate 95 --flaky-rate 5
+# Run tests (wraps `npx playwright test`, passes args through verbatim)
+npx sentinel test
+
+# Run tests with predictive filtering — skips tests predicted to pass
+npx sentinel test --predict
+
+# Apply pending selector healing suggestions interactively
+npx sentinel heal
+
+# Ask Sentinel about your test history (single-shot or REPL)
+npx sentinel ask "why are my login tests flaky?"
+npx sentinel ask
+
+# Open the last generated HTML report in browser
+npx sentinel report
+
+# Show suite health grade and trend summary
+npx sentinel status
+
+# Structured, agent-friendly failure analysis for the last run
+npx sentinel diagnose
+npx sentinel diagnose --json
+
+# Push results to configured Scribe targets (Jira, GitHub, Slack, Teams)
+npx sentinel sync
 ```
 
-Exit codes: `0` = all gates passed, `1` = gate failed (use in CI to block deploys).
+### sentinel.config.js
 
-### Flaky Test Quarantine
+Place a `sentinel.config.js` (or `sentinel.config.json`) in your project root to configure the ecosystem modules:
 
-Automatically detect and quarantine chronically flaky tests. Quarantined tests are tracked in a JSON file and can be excluded from gate failures:
+```javascript
+// sentinel.config.js
+const { defineConfig } = require('qa-sentinel/cli')
+
+module.exports = defineConfig({
+  agent: {
+    heal: true,                    // Enable selector healing
+    cdp: true,                     // Enable CDP fixture integration
+    circuitBreakerThreshold: 3,    // Quarantine test after N failures in a run
+  },
+  sage: {
+    ai: 'claude',                  // 'claude' | 'openai'
+    digest: true,                  // Write AI digest after each run
+    historyDepth: 5,               // Prior runs to include in context
+  },
+  scribe: {
+    jira: true,                    // Create/update Jira tickets for failures
+    github: true,                  // Post PR comments
+    slack: true,                   // Post to Slack channel
+    teams: false,
+    jiraCloseOnNConsecutivePasses: 3,
+  },
+  seer: {
+    predict: false,                // Enable by default (or use --predict flag)
+    minConfidence: 0.8,            // Skip tests above this confidence threshold
+    diffBase: 'HEAD~1',            // Git ref to diff against
+  },
+})
+```
+
+---
+
+## Ecosystem Modules
+
+### Sentinel Agent — Self-Healing Selectors
+
+The Agent module hooks into your test run via a Playwright fixture. When a selector fails, it analyses the DOM to find the closest matching element and generates a healing suggestion.
 
 ```typescript
-reporter: [
-  ['qa-sentinel', {
-    outputFile: 'qa-sentinel-report.html',
-    licenseKey: process.env.QA_SENTINEL_LICENSE_KEY,
-    quarantine: {
-      enabled: true,
-      file: '.qa-sentinel-quarantine.json',
-      autoQuarantine: true,
-      threshold: 3,  // failures before auto-quarantine
-    },
-  }],
-]
+// playwright.config.ts
+import { sentinelFixtures } from 'qa-sentinel/fixtures'
+
+export default defineConfig({
+  use: {
+    ...sentinelFixtures,
+  },
+})
 ```
 
-### Custom Branding
+Suggestions are stored in `.sentinel/heal-suggestions.json`. Review and apply them with:
 
-Customise the report title, footer, and theme colours:
-
-```typescript
-reporter: [
-  ['qa-sentinel', {
-    outputFile: 'qa-sentinel-report.html',
-    licenseKey: process.env.QA_SENTINEL_LICENSE_KEY,
-    branding: {
-      title: 'Acme Corp Test Report',
-      footer: 'Generated by QA Team',
-      colors: {
-        primary: '#6366f1',
-        accent: '#8b5cf6',
-        success: '#22c55e',
-        error: '#ef4444',
-        warning: '#f59e0b',
-      },
-    },
-  }],
-]
+```bash
+npx sentinel heal
 ```
 
-### JSON & JUnit Export
+The **circuit breaker** quarantines a test after it fails N times in a single run (default: 3), preventing cascading failures from poisoning the run. State is written to `.sentinel/runs/{runId}/quarantine.json`.
 
-Export test results in structured formats for external tools:
+### Sentinel Sage — AI Assistant
 
-```typescript
-reporter: [
-  ['qa-sentinel', {
-    outputFile: 'qa-sentinel-report.html',
-    licenseKey: process.env.QA_SENTINEL_LICENSE_KEY,
-    jsonExport: 'qa-sentinel-data.json',
-    junitExport: 'qa-sentinel-junit.xml',
-  }],
-]
+Sage provides an AI-powered REPL and post-run digest using your test history as context. It uses Claude by default (`claude-opus-4-6`), falling back gracefully if no API key is present.
+
+```bash
+# Single-shot query
+npx sentinel ask "which tests have been flaky this week?"
+
+# Interactive REPL
+npx sentinel ask
 ```
 
-### AI Health Digest
+Set your AI key as an environment variable:
 
-Get an AI-generated summary of your test suite health, trends, and recommendations:
-
-```typescript
-reporter: [
-  ['qa-sentinel', {
-    outputFile: 'qa-sentinel-report.html',
-    licenseKey: process.env.QA_SENTINEL_LICENSE_KEY,
-    enableAIRecommendations: true,
-    aiHealthDigest: true,
-  }],
-]
+```bash
+export ANTHROPIC_API_KEY=your-key   # Claude (preferred)
+export OPENAI_API_KEY=your-key      # OpenAI
 ```
+
+### Sentinel Scribe — Integrations
+
+Scribe pushes test results to external systems after a run. Configure targets in `sentinel.config.js`, then run:
+
+```bash
+npx sentinel sync
+```
+
+| Target | Required env vars |
+|---|---|
+| Jira | `JIRA_BASE_URL`, `JIRA_EMAIL`, `JIRA_API_TOKEN`, `JIRA_PROJECT_KEY` |
+| GitHub PR | `GITHUB_TOKEN`, `GITHUB_REPOSITORY`, PR number from CI env |
+| Slack | `SLACK_WEBHOOK_URL` or `SLACK_BOT_TOKEN` + `SLACK_CHANNEL` |
+| Teams | `TEAMS_WEBHOOK_URL` |
+
+Scribe tracks filed tickets and comments in `.sentinel/scribe-store.json` and keeps them updated as tests pass or fail.
+
+### Sentinel Seer — Predictive Filtering
+
+Seer analyses your test history and git diff to predict which tests are likely to pass unchanged, then generates `--grep-invert` patterns to skip them.
+
+```bash
+npx sentinel test --predict
+```
+
+Safety guarantees:
+- New tests (no history) are **always run**
+- Tests touching changed files (per `git diff`) are **always run**
+- Only tests above `minConfidence` threshold are skipped
+
+Disable per-run with `--no-predict`.
+
+---
+
+## Agent-Native Output
+
+Sentinel is built to be called by AI coding agents (Claude Code, Copilot, Cursor) and CI scripts — not just read by humans.
+
+### Structured diagnosis
+
+`sentinel diagnose --json` emits a machine-readable analysis of the last run: a heuristic root-cause category per failure (`timing`, `selector-not-found`, `assertion`, `network`, `resource-exhaustion`), a flaky verdict, stability grade, and any pending self-healing selector suggestions.
+
+```bash
+npx sentinel diagnose --json | jq '.failures[] | {title, category, confidence}'
+```
+
+Root-cause categorization is **heuristic-first** — fast, transparent, and free, with no LLM call required. Pipe the JSON to an agent when you want deeper analysis on top.
+
+### MCP server
+
+Sentinel ships an optional [Model Context Protocol](https://modelcontextprotocol.io) server so agents can call it as a verification layer:
+
+```bash
+npm install @modelcontextprotocol/sdk   # optional peer dependency
+npx qa-sentinel-mcp
+```
+
+Tools exposed: `get_last_run`, `diagnose_failure`, `get_flaky_tests`, `suggest_heal`. The CLI JSON path is the primary, most token-efficient surface; MCP is complementary.
+
+---
 
 ## Configuration
 
-### Full Options Reference
+### Reporter Options
 
 ```typescript
 reporter: [
@@ -279,42 +279,27 @@ reporter: [
     maxHistoryRuns: 10,
     performanceThreshold: 0.2,
 
-    // Pro license
-    licenseKey: process.env.QA_SENTINEL_LICENSE_KEY,
+    // AI analysis
+    enableAIRecommendations: true,
+    ai: {
+      model: 'claude-haiku-4-5-20251001',  // override model
+      maxTokens: 2048,
+    },
 
-    // Notifications
-    slackWebhook: process.env.SLACK_WEBHOOK_URL,
-    teamsWebhook: process.env.TEAMS_WEBHOOK_URL,
-
-    // Feature flags (all default to true unless noted)
+    // Feature flags (all default true unless noted)
     enableRetryAnalysis: true,
     enableFailureClustering: true,
     enableStabilityScore: true,
     enableGalleryView: true,
     enableComparison: true,
-    enableAIRecommendations: true,
     enableTrendsView: true,
     enableTraceViewer: true,
-    enableHistoryDrilldown: false,
     enableNetworkLogs: true,
-
-    // Step and path options
-    filterPwApiSteps: false,
-    relativeToCwd: false,
-
-    // Multi-project
-    projectName: 'ui-tests',
-    runId: process.env.GITHUB_RUN_ID,
-
-    // Network logging
-    networkLogFilter: 'api.example.com',
-    networkLogExcludeAssets: true,
-    networkLogMaxEntries: 50,
+    enableHistoryDrilldown: false,  // stores per-run snapshots for history drilldown
 
     // Thresholds
-    stabilityThreshold: 70,
-    retryFailureThreshold: 3,
-    baselineRunId: 'main-branch-baseline',
+    stabilityThreshold: 70,         // warn below this score
+    retryFailureThreshold: 3,       // warn if needs >3 retries
     thresholds: {
       flakinessStable: 0.1,
       flakinessUnstable: 0.3,
@@ -328,20 +313,91 @@ reporter: [
       gradeD: 60,
     },
 
-    // Pro features
-    theme: 'system',           // system, light, dark, ocean, sunset, dracula, cyberpunk, forest, rose
-    pdfExport: false,
-    pdfStyle: 'corporate',     // corporate, minimal, dark
-    jsonExport: '',             // path for JSON export
-    junitExport: '',            // path for JUnit export
-    qualityGates: {},           // { minPassRate, maxFlakyRate, maxDuration, minStabilityScore }
-    quarantine: {},             // { enabled, file, autoQuarantine, threshold }
-    branding: {},               // { title, footer, colors }
-    aiHealthDigest: false,
+    // Comparison
+    baselineRunId: 'main-branch-baseline',
 
-    // Advanced
+    // Network logging (extracted from trace files)
+    networkLogFilter: 'api.example.com',
+    networkLogExcludeAssets: true,
+    networkLogMaxEntries: 50,
+
+    // Step filtering
+    filterPwApiSteps: false,        // true = only show named test.step() entries
+
+    // Path resolution
+    relativeToCwd: false,
+
+    // Multi-project history isolation
+    projectName: 'ui-tests',
+    historyFile: 'reports/{project}/history.json',
+
+    // External run ID (for CI shards)
+    runId: process.env.GITHUB_RUN_ID,
+
+    // Notifications
+    slackWebhook: process.env.SLACK_WEBHOOK_URL,
+    teamsWebhook: process.env.TEAMS_WEBHOOK_URL,
+    githubPRComments: true,         // auto-enabled when GITHUB_TOKEN + PR context present
+    notifications: [
+      {
+        channel: 'pagerduty',
+        config: { integrationKey: process.env.PAGERDUTY_KEY },
+        conditions: { minFailures: 5 },
+      },
+    ],
+
+    // Exports
+    exportJson: true,               // writes smart-report-data.json
+    exportJunit: true,              // writes JUnit XML
+    exportPdf: true,                // executive PDF (pdfkit, 3 colour themes)
+    exportPdfFull: false,           // full HTML-to-PDF via Playwright chromium
+
+    // Theme
+    theme: {
+      preset: 'dracula',            // system | light | dark | ocean | sunset | dracula | cyberpunk | forest | rose
+    },
+
+    // Custom theme colours
+    theme: {
+      primary: '#6366f1',
+      accent: '#8b5cf6',
+      success: '#22c55e',
+      error: '#ef4444',
+      warning: '#f59e0b',
+    },
+
+    // Branding
+    branding: {
+      title: 'Acme Corp Test Report',
+      footer: 'Generated by QA Team',
+      logo: 'https://example.com/logo.png',
+      hidePoweredBy: false,
+    },
+
+    // Quality gates
+    qualityGates: {
+      minPassRate: 95,
+      maxFlakyRate: 5,
+      maxFailures: 0,
+      minStabilityGrade: 'B',
+      noNewFailures: true,
+    },
+
+    // Flaky test quarantine
+    quarantine: {
+      enabled: true,
+      threshold: 0.3,              // flakiness score to trigger quarantine
+      maxQuarantined: 50,
+      outputFile: '.smart-quarantine.json',
+    },
+
+    // CSP-safe mode (saves attachments as files instead of base64)
     cspSafe: false,
     maxEmbeddedSize: 5 * 1024 * 1024,
+
+    // Cloud upload (Sentinel Cloud)
+    uploadToCloud: false,
+    apiKey: process.env.SENTINEL_API_KEY,
   }],
 ]
 ```
@@ -356,7 +412,9 @@ export OPENAI_API_KEY=your-key       # OpenAI
 export GEMINI_API_KEY=your-key       # Google Gemini
 ```
 
-Provider priority: Anthropic > OpenAI > Gemini. The reporter analyses failures in batches and provides fix suggestions in the report.
+Provider priority: Anthropic > OpenAI > Gemini. Failures are analysed in batches (3 concurrent) with fix suggestions embedded in the report.
+
+---
 
 ## Stability Grades
 
@@ -370,56 +428,33 @@ Composite score (0-100) from three factors:
 
 Grades: **A+** (95-100), **A** (90-94), **B** (80-89), **C** (70-79), **D** (60-69), **F** (<60). All weights and thresholds are configurable.
 
-## Step Filtering
+---
+
+## Quality Gates
+
+Fail CI builds when results don't meet your thresholds.
+
+Inline in `playwright.config.ts`:
 
 ```typescript
-reporter: [
-  ['qa-sentinel', {
-    filterPwApiSteps: true,  // Only show custom test.step() entries
-  }],
-]
-```
-
-With filtering on, verbose `page.click()`, `page.fill()` steps are hidden — only your named `test.step()` entries appear.
-
-## Multi-Project History
-
-Isolate history per test suite to prevent metric contamination:
-
-```typescript
-reporter: [
-  ['qa-sentinel', {
-    projectName: 'api',
-    historyFile: 'reports/{project}/history.json',
-  }],
-]
-```
-
-## Trace Viewer
-
-### Inline Viewer
-Click **View** on any test with traces to open the built-in viewer with film strip, actions panel, before/after screenshots, network waterfall, console messages, and errors.
-
-### Local Server
-```bash
-npx qa-sentinel-serve qa-sentinel-report.html
-```
-Serves the report locally with full trace viewer support — no `file://` CORS issues.
-
-### CLI Viewer
-```bash
-npx qa-sentinel-view-trace ./traces/my-test-trace-0.zip
-```
-
-## Network Logs
-
-Automatically extracted from Playwright trace files — no code changes required. Shows method, URL, status code, duration, and payload sizes. Requires tracing enabled:
-
-```typescript
-use: {
-  trace: 'retain-on-failure',  // or 'on'
+qualityGates: {
+  minPassRate: 95,
+  maxFlakyRate: 5,
+  maxFailures: 0,
+  minStabilityGrade: 'B',
+  noNewFailures: true,
 }
 ```
+
+Or as a standalone CLI step after tests run:
+
+```bash
+npx qa-sentinel gate --pass-rate 95 --flaky-rate 5
+```
+
+Exit codes: `0` = all gates passed, `1` = gate failed. Use as a blocking CI step.
+
+---
 
 ## Annotations
 
@@ -436,6 +471,8 @@ test('payment flow', async ({ page }) => {
   test.info().annotations.push({ type: 'issue', description: 'JIRA-123' });
 });
 ```
+
+---
 
 ## CI Integration
 
@@ -505,12 +542,11 @@ steps:
 
 ### CI Auto-Detection
 
-The reporter automatically detects GitHub Actions, GitLab CI, CircleCI, Jenkins, Azure DevOps, and Buildkite. Branch, commit SHA, and build ID are displayed in the report header.
+GitHub Actions, GitLab CI, CircleCI, Jenkins, Azure DevOps, and Buildkite are automatically detected. Branch, commit SHA, and build ID appear in the report header.
 
 ### Quality Gates in CI
 
 ```yaml
-# GitHub Actions example
 - run: npx playwright test
   continue-on-error: true
 
@@ -540,6 +576,83 @@ npx qa-sentinel-merge-history \
   --max-runs 10
 ```
 
+---
+
+## Utility CLIs
+
+```bash
+# Serve the report locally (avoids file:// CORS issues with trace viewer)
+npx qa-sentinel-serve qa-sentinel-report.html
+
+# Open a trace file directly
+npx qa-sentinel-view-trace ./traces/my-test-trace-0.zip
+
+# Quality gate check (standalone)
+npx qa-sentinel gate --pass-rate 95 --flaky-rate 5
+
+# Merge shard histories
+npx qa-sentinel-merge-history s1/history.json s2/history.json -o merged.json
+```
+
+---
+
+## Trace Viewer
+
+### Inline Viewer
+
+Click **View** on any test with traces to open the built-in viewer with film strip, actions panel, before/after screenshots, network waterfall, console messages, and errors.
+
+### Local Server
+
+```bash
+npx qa-sentinel-serve qa-sentinel-report.html
+```
+
+Serves the report with full trace viewer support — no `file://` CORS issues.
+
+---
+
+## Network Logs
+
+Automatically extracted from Playwright trace files — no code changes required. Shows method, URL, status code, duration, and payload sizes. Requires tracing enabled in your Playwright config:
+
+```typescript
+use: {
+  trace: 'retain-on-failure',  // or 'on'
+}
+```
+
+---
+
+## Step Filtering
+
+```typescript
+reporter: [
+  ['qa-sentinel', {
+    filterPwApiSteps: true,  // Only show named test.step() entries
+  }],
+]
+```
+
+With filtering on, verbose `page.click()`, `page.fill()` steps are hidden — only your named `test.step()` entries appear in the timeline.
+
+---
+
+## Multi-Project History
+
+Isolate history per test suite to prevent metric contamination across different projects:
+
+```typescript
+reporter: [
+  ['qa-sentinel', {
+    projectName: 'api',
+    historyFile: 'reports/{project}/history.json',
+  }],
+]
+```
+
+---
+
 ## CSP-Safe Mode
 
 For environments with strict Content Security Policy:
@@ -550,7 +663,9 @@ reporter: [
 ]
 ```
 
-Screenshots saved as separate files instead of base64, system fonts instead of Google Fonts, file references instead of embedded data.
+Screenshots saved as separate files instead of base64, system fonts instead of Google Fonts.
+
+---
 
 ## Cucumber Integration
 
@@ -570,38 +685,21 @@ export default defineConfig({
 });
 ```
 
-## FAQ
-
-### How do I get a Pro license?
-
-Contact us via [GitHub Issues](https://github.com/vbonite-sm/qa-sentinel/issues). Your license key activates immediately.
-
-### Does qa-sentinel work without a license key?
-
-Yes. All core features (AI analysis, flakiness detection, stability grades, trend analytics, trace viewer, gallery, etc.) are free. Pro features unlock when you add a license key.
-
-### RangeError with large test suites?
-
-Increase Node.js heap: `NODE_OPTIONS=--max-old-space-size=4096 npx playwright test`
-
-### Different flakiness than Playwright's HTML report?
-
-They use different methodologies — see [Flakiness Detection](#flakiness-detection) above.
-
-### Report too large or browser hangs?
-
-Enable `cspSafe: true` to save attachments as files instead of embedding, or reduce `maxHistoryRuns`. Use `maxEmbeddedSize` to control the inline trace threshold.
+---
 
 ## Troubleshooting
 
 | Problem | Cause | Fix |
 |---|---|---|
 | No history data | History file missing or wrong path | Check `historyFile` path, use CI caching |
-| No network logs | Tracing not enabled | Add `trace: 'retain-on-failure'` to config |
+| No network logs | Tracing not enabled | Add `trace: 'retain-on-failure'` to Playwright config |
 | No AI suggestions | Missing API key | Set `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, or `GEMINI_API_KEY` |
 | Mixed project metrics | Shared history file | Use `projectName` to isolate |
-| Pro features not showing | License key missing or expired | Check `QA_SENTINEL_LICENSE_KEY` env var or `licenseKey` config |
 | Quality gate not failing CI | Gate not run as separate step | Run `npx qa-sentinel gate` as its own CI step |
+| RangeError with large suites | Node.js heap exhausted | `NODE_OPTIONS=--max-old-space-size=4096 npx playwright test` |
+| Report too large | Large embedded attachments | Enable `cspSafe: true` or reduce `maxEmbeddedSize` |
+
+---
 
 ## Development
 
@@ -612,21 +710,23 @@ npm test
 npm run test:demo
 ```
 
+---
+
 ## Roadmap
 
-- [ ] **Jira auto-ticketing** — auto-create/update Jira issues from failed tests
-- [ ] **Self-healing selector suggestions** — AI-powered locator repair for broken selectors
-- [ ] **Predictive failure scoring** — ML-based pre-run flakiness risk estimation
-- [ ] **Confluence push** — publish test reports directly to Confluence spaces
-- [ ] **GitHub PR comments** — post summarized test results inline on pull requests
-- [ ] **Multi-framework adapters** — Cypress, WebdriverIO, Vitest, pytest result normalization
+- [ ] **Seer UI** — display predicted-skip decisions in the report
+- [ ] **Scribe digest push** — publish health digests to Confluence/Notion
+- [ ] **Multi-framework adapters** — Cypress, WebdriverIO, Vitest, pytest result normalisation
+- [ ] **Sentinel Cloud** — hosted dashboards, managed AI credits, SSO
+
+---
 
 ## Contributors
 
-- [Gary Parker](https://github.com/qa-gary-parker) — Upstream creator (playwright-smart-reporter)
+- [Gary Parker](https://github.com/qa-gary-parker) — Original author
 - [Filip Gajic](https://github.com/Morph93) — UI redesign
 - [Liam Childs](https://github.com/liamchilds) — Parameterized project support
 
 ## License
 
-MIT — see [LICENSE](./LICENSE). Community features are free and open. Pro features require a valid qa-sentinel license key.
+MIT — see [LICENSE](./LICENSE).

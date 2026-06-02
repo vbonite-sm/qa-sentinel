@@ -6,38 +6,38 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- **Retries Double-Counted** ([#17](https://github.com/qa-gary-parker/qa-sentinel/issues/17))
+- **Retries Double-Counted** ([#17](https://github.com/vbonite-sm/qa-sentinel/issues/17))
   - Test retries no longer inflate test counts (e.g., 509 tests showing as 530)
   - Only the final attempt for each test is counted
   - Uses Playwright's `test.outcome()` to properly identify flaky tests
 
-- **Expected Failures Incorrectly Reported** ([#16](https://github.com/qa-gary-parker/qa-sentinel/issues/16))
+- **Expected Failures Incorrectly Reported** ([#16](https://github.com/vbonite-sm/qa-sentinel/issues/16))
   - Tests marked with `test.fail()` that actually fail are now counted as passed (expected behavior)
   - Uses Playwright's `expectedStatus` to determine expected outcomes
   - Expected failures are excluded from failure clustering
 
 ### Added
 
-- **Improved Tag Extraction** ([#15](https://github.com/qa-gary-parker/qa-sentinel/issues/15))
+- **Improved Tag Extraction** ([#15](https://github.com/vbonite-sm/qa-sentinel/issues/15))
   - Tags now extracted from `test.tags` property (Playwright's built-in collection)
   - Falls back to annotations and title parsing for backwards compatibility
   - Tags are visible in the test cards and sidebar filters
 
-- **Better Console Output** ([#15](https://github.com/qa-gary-parker/qa-sentinel/issues/15))
+- **Better Console Output** ([#15](https://github.com/vbonite-sm/qa-sentinel/issues/15))
   - Report path now includes helpful commands to open the report
   - Shows `npx playwright show-report` and `open` commands
 
-- **Custom Attachments Support** ([#15](https://github.com/qa-gary-parker/qa-sentinel/issues/15))
+- **Custom Attachments Support** ([#15](https://github.com/vbonite-sm/qa-sentinel/issues/15))
   - Attachments added via `testInfo.attach()` are now collected and displayed
   - Custom attachments appear in test details with appropriate icons
 
-- **Inline Trace Viewer** ([#13](https://github.com/qa-gary-parker/qa-sentinel/issues/13))
+- **Inline Trace Viewer** ([#13](https://github.com/vbonite-sm/qa-sentinel/issues/13))
   - View Playwright traces directly in the dashboard without CLI commands
   - Full-featured viewer with timeline, actions, snapshots, console, and network tabs
   - Includes JSZip for client-side trace extraction
   - Fallback to CLI command when viewing from file:// protocol
 
-- **Attachment Gallery** ([#14](https://github.com/qa-gary-parker/qa-sentinel/issues/14))
+- **Attachment Gallery** ([#14](https://github.com/vbonite-sm/qa-sentinel/issues/14))
   - Gallery view displays all screenshots, videos, and traces in a grid
   - Lightbox support for screenshot viewing with keyboard navigation
   - Filter by attachment type (screenshots, videos, traces)
@@ -46,7 +46,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- **Google Gemini AI Support** ([#18](https://github.com/qa-gary-parker/qa-sentinel/pull/18))
+- **Google Gemini AI Support** ([#18](https://github.com/vbonite-sm/qa-sentinel/pull/18))
   - Added `GEMINI_API_KEY` environment variable for Google Gemini API integration
   - Uses `gemini-2.5-flash` model for fast, cost-effective failure analysis
   - Provider priority: Anthropic Claude → OpenAI → Google Gemini
@@ -57,7 +57,7 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- **Timed Out Tests Now Counted as Failed** ([#12](https://github.com/qa-gary-parker/qa-sentinel/issues/12))
+- **Timed Out Tests Now Counted as Failed** ([#12](https://github.com/vbonite-sm/qa-sentinel/issues/12))
   - Tests with `timedOut` status are now correctly counted as failed in summary stats
   - Comparison detection for new failures and fixed tests now includes timedOut status
   - Previously, timedOut tests showed as 0 failed in stats

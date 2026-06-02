@@ -3,6 +3,7 @@
 **Date:** 2026-03-21
 **Status:** Approved
 **Author:** QA Engineering
+**See also:** [Product Strategy & Market Analysis (2026-06-03)](./2026-06-03-product-strategy.md) — market positioning, competitive landscape, and the agent-native direction.
 
 ---
 
@@ -141,7 +142,7 @@ sentinel merge       # merge blob reports from sharded runs (already exists — 
 - Flakiness circuit-breaker — auto-quarantines a test after N consecutive failures within a run. Default N = 3, configurable via `agent.circuitBreakerThreshold` in `sentinel.config.ts`. Community: N fixed at 3. Pro/Team: configurable.
 - Live terminal run dashboard
 
-**Tier:** suggestions → Pro | auto-heal → Team. Community tier: `sentinelFixtures` is a no-op — importing it does not add overhead but Agent capabilities are fully disabled. The fixture returns native Playwright `page`/`browser` objects unchanged.
+**Tier:** All Agent capabilities are fully open source. `sentinelFixtures` is always active — no tier check, no no-op path.
 
 ---
 
@@ -162,7 +163,7 @@ sentinel merge       # merge blob reports from sharded runs (already exists — 
 - Natural language Q&A REPL: `sentinel ask "what's been flaky this sprint?"`
 - Executive digest — Markdown summary + PDF, schedulable via CI
 
-**Tier:** basic AI summary (3/day) → Community | unlimited + trends + Q&A + digest → Pro/Team
+**Tier:** All Sage capabilities are fully open source. Local usage is unlimited — bring your own API key. Sentinel Cloud provides hosted AI credits for teams that do not manage their own key.
 
 ---
 
@@ -186,7 +187,7 @@ sentinel merge       # merge blob reports from sharded runs (already exists — 
 - Slack / Teams: structured degradation digest (extends existing notifiers)
 - `sentinel sync` — manual trigger for any configured Scribe target
 
-**Tier:** GitHub + Slack → Pro | Jira + Confluence → Team
+**Tier:** All Scribe integrations are fully open source. Users configure credentials locally. Sentinel Cloud manages credentials, webhook endpoints, and retry logic for teams that prefer zero-infrastructure setup.
 
 ---
 
@@ -209,7 +210,7 @@ sentinel merge       # merge blob reports from sharded runs (already exists — 
 - Smart shard ordering — longest-running tests first (reduces total CI wall time)
 - Pre-flight flaky filter — remove known-flaky tests before run (optionally)
 
-**Tier:** shard ordering → Pro | full prediction + filtering → Team
+**Tier:** All Seer capabilities are fully open source.
 
 ---
 
@@ -296,33 +297,33 @@ interface ScribeRecord {
 
 ---
 
-## 6. Monetization & Tier Model
+## 6. Monetization Model
 
-No new tiers. New capabilities map cleanly onto existing Community / Pro / Team gates.
+**qa-sentinel is fully open source. All features are available to everyone with no paywalls.**
 
-| Capability | Community | Pro | Team |
-|---|---|---|---|
-| `sentinel test` CLI wrapper | ✅ | ✅ | ✅ |
-| HTML report, history, stability grades | ✅ | ✅ | ✅ |
-| **Sage:** basic AI failure summary | ✅ (3/day) | ✅ | ✅ |
-| **Sage:** trend modeling + anomaly detection | ❌ | ✅ | ✅ |
-| **Sage:** Q&A REPL (`sentinel ask`) | ❌ | ✅ | ✅ |
-| **Sage:** executive digest + PDF | ❌ | ✅ | ✅ |
-| **Agent:** selector healing suggestions | ❌ | ✅ | ✅ |
-| **Agent:** auto-heal (`--heal`) | ❌ | ❌ | ✅ |
-| **Agent:** CDP health monitoring | ❌ | ✅ | ✅ |
-| **Scribe:** GitHub PR comments + gates | ❌ | ✅ | ✅ |
-| **Scribe:** Slack / Teams alerts | ❌ | ✅ | ✅ |
-| **Scribe:** Jira auto-ticketing | ❌ | ❌ | ✅ |
-| **Scribe:** Confluence publishing | ❌ | ❌ | ✅ |
-| **Seer:** shard ordering | ❌ | ✅ | ✅ |
-| **Seer:** failure prediction + filtering | ❌ | ❌ | ✅ |
+The `src/license/` module and JWT tier gates are removed entirely. No `LicenseValidator.hasFeature()` checks remain in the codebase.
 
-**Upgrade triggers:**
-- **Community → Pro:** SDET hits the 3/day AI limit or sees healing suggestions they cannot apply
-- **Pro → Team:** QA Lead wants Jira tickets auto-filed, or needs Seer to cut CI time
+### 6.1 OSS (Free, Self-Hosted)
 
-**Team-tier ROI headline for CTOs:** "Seer reduces CI run time by ~40% through change-aware test selection."
+Everything in this spec ships as open-source MIT. Users bring their own API keys for AI features (Sage). All CLI, Agent, Sage, Scribe, and Seer capabilities are fully enabled.
+
+### 6.2 Sentinel Cloud (Paid, Hosted)
+
+Cloud adds value on top of the OSS tool — it does not gate any local features.
+
+| Capability | OSS (local) | Sentinel Cloud |
+|---|---|---|
+| All CLI, Agent, Sage, Scribe, Seer features | ✅ | ✅ |
+| Hosted test history + team dashboards | ❌ | ✅ |
+| AI credits (Sage without your own API key) | ❌ | ✅ |
+| Managed Scribe credentials + webhooks | ❌ | ✅ |
+| Cross-repo trend analytics | ❌ | ✅ |
+| SSO + team access management | ❌ | ✅ |
+| Priority support + SLAs | ❌ | ✅ |
+
+**Cloud adoption motion:** Bottom-up PLG. SDET gets value locally → QA Lead sees team dashboards → CTO sees CI cost reduction from Seer.
+
+**Cloud ROI headline for CTOs:** "Seer reduces CI run time by ~40% through change-aware test selection. Sentinel Cloud makes that data visible across every repo and team."
 
 ---
 
