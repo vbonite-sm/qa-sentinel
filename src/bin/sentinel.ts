@@ -5,6 +5,7 @@ import { runHeal } from '../cli/commands/heal'
 import { runAsk } from '../cli/commands/ask'
 import { runReport } from '../cli/commands/report'
 import { runStatus } from '../cli/commands/status'
+import { runDiagnose } from '../cli/commands/diagnose'
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pkg = require('../../package.json') as { version: string }
@@ -61,6 +62,14 @@ program
   .description('Show test suite health grade and trend summary')
   .action(async () => {
     await runStatus()
+  })
+
+program
+  .command('diagnose')
+  .description('Structured failure analysis for the last run (agent-friendly)')
+  .option('--json', 'Emit machine-readable JSON for agents and scripts')
+  .action(async (opts: { json?: boolean }) => {
+    await runDiagnose(opts)
   })
 
 program.parse(process.argv)
