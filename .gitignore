@@ -48,5 +48,8 @@ python/playwright_smart_reporter_python/
 .sentinel/
 .worktrees/
 
+# Local Claude Code settings (personal, per-machine - not shared)
+.claude/settings.local.json
+
 # Docs have their own git repo
 docs/
