@@ -61,6 +61,62 @@ describe('html-generator', () => {
       expect(html).toContain('</html>');
     });
 
+    it('renders a Needs Attention tab as the default and buckets tests by priority', () => {
+      const data: HtmlGeneratorData = {
+        results: [
+          createMinimalTestResult({ testId: 'p1', title: 'passing', status: 'passed' }),
+          createMinimalTestResult({ testId: 'f1', title: 'broken', status: 'failed', error: 'boom' }),
+          createMinimalTestResult({ testId: 'fl1', title: 'flaky one', status: 'passed', outcome: 'flaky', flakinessScore: 0.5 }),
+          createMinimalTestResult({ testId: 's1', title: 'skipped one', status: 'skipped' }),
+        ],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+
+      const html = generateHtml(data);
+
+      // New default tab exists and is active.
+      expect(html).toContain('data-tab="by-attention"');
+      expect(html).toContain('id="tab-by-attention"');
+      expect(html).toContain('Needs Attention');
+      expect(html).toContain('class="tab-btn active" data-tab="by-attention"');
+      // All Tests is no longer the active default.
+      expect(html).not.toContain('class="tab-btn active" data-tab="all"');
+      // The four priority buckets render.
+      expect(html).toContain('Flaky (1)');
+      expect(html).toContain('Passing (1)');
+      expect(html).toContain('Skipped (1)');
+      // Default JS tab matches.
+      expect(html).toContain("currentTestTab = 'by-attention'");
+    });
+
+    it('renders a first-run empty state when there are no results', () => {
+      const data: HtmlGeneratorData = {
+        results: [],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+
+      const html = generateHtml(data);
+      expect(html).toContain('No test results yet');
+      expect(html).toContain('sentinel test');
+    });
+
+    it('wires deep-link hash routing into the report', () => {
+      const data: HtmlGeneratorData = {
+        results: [createMinimalTestResult()],
+        history: createTestHistory(),
+        startTime: Date.now(),
+        options: {},
+      };
+      const html = generateHtml(data);
+      expect(html).toContain('function applyLocationHash');
+      expect(html).toContain('function updateLocationHash');
+      expect(html).toContain("window.addEventListener('hashchange', applyLocationHash)");
+    });
+
     it('handles single passed test', () => {
       const data: HtmlGeneratorData = {
         results: [createMinimalTestResult()],

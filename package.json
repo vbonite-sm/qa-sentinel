@@ -1,7 +1,7 @@
 {
   "name": "qa-sentinel",
   "version": "1.0.0",
-  "description": "Playwright-first test intelligence platform with AI failure analysis, predictive scoring, self-healing selectors, and Jira/Confluence/GitHub PR integrations",
+  "description": "Open-source, self-hostable test intelligence for Playwright - AI failure analysis, flakiness detection, self-healing selectors, predictive scoring, quality gates, and Jira/Confluence/GitHub/Slack integrations",
   "main": "dist/qa-sentinel.js",
   "types": "dist/qa-sentinel.d.ts",
   "bin": {
@@ -9,6 +9,7 @@
     "qa-sentinel-view-trace": "./dist/bin/view-trace.js",
     "qa-sentinel-serve": "./dist/bin/serve.js",
     "qa-sentinel": "./dist/bin/cli.js",
+    "qa-sentinel-mcp": "./dist/bin/mcp.js",
     "sentinel": "./dist/bin/sentinel.js"
   },
   "exports": {
@@ -61,11 +62,17 @@
     "confluence",
     "github-pr",
     "self-healing",
-    "predictive"
+    "predictive",
+    "open-source",
+    "test-intelligence",
+    "self-hosted",
+    "agent-native",
+    "mcp",
+    "root-cause"
   ],
   "contributors": [
     {
-      "name": "Gary Parker (upstream)",
+      "name": "Gary Parker (original author)",
       "url": "https://github.com/qa-gary-parker"
     },
     {
@@ -103,6 +110,7 @@
   },
   "optionalDependencies": {
     "@anthropic-ai/sdk": "^0.32.0",
+    "@modelcontextprotocol/sdk": "^1.0.0",
     "openai": "^4.70.0"
   },
   "dependencies": {

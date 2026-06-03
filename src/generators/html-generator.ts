@@ -65,6 +65,66 @@ function generateFileTree(results: TestResultData[]): string {
 /**
  * Generate test list items for the main panel
  */
+/**
+ * Bucket tests into an action-priority order for the default "Needs Attention"
+ * tab: Needs Attention > Flaky > Passing > Skipped. Reuses generateTestListItems
+ * for rendering so list-item markup stays identical across tabs. When there are
+ * no results at all, renders a first-run empty state instead.
+ */
+function generateAttentionGroupedContent(
+  results: TestResultData[],
+  showTraceSection: boolean,
+  attention: AttentionSets,
+  quarantinedTestIds?: Set<string>
+): string {
+  const needsAttention = (r: TestResultData): boolean =>
+    r.status === 'failed' ||
+    r.status === 'timedOut' ||
+    attention.newFailures.has(r.testId) ||
+    attention.regressions.has(r.testId) ||
+    (r.stabilityScore?.needsAttention ?? false);
+  const isFlaky = (r: TestResultData): boolean =>
+    r.outcome === 'flaky' || (r.flakinessScore !== undefined && r.flakinessScore >= 0.3);
+
+  const attentionTests = results.filter(needsAttention);
+  const attnIds = new Set(attentionTests.map(r => r.testId));
+  const flakyTests = results.filter(r => !attnIds.has(r.testId) && isFlaky(r));
+  const flakyIds = new Set(flakyTests.map(r => r.testId));
+  const skippedTests = results.filter(
+    r => r.status === 'skipped' && !attnIds.has(r.testId) && !flakyIds.has(r.testId)
+  );
+  const skipIds = new Set(skippedTests.map(r => r.testId));
+  const passingTests = results.filter(
+    r => !attnIds.has(r.testId) && !flakyIds.has(r.testId) && !skipIds.has(r.testId)
+  );
+
+  const section = (title: string, cls: string, dot: string, items: TestResultData[]): string =>
+    items.length === 0
+      ? ''
+      : `
+                <div class="status-group ${cls}">
+                  <div class="status-group-header">
+                    <span class="status-group-dot ${dot}"></span>
+                    <span class="status-group-title">${title} (${items.length})</span>
+                  </div>
+                  ${generateTestListItems(items, showTraceSection, attention, quarantinedTestIds)}
+                </div>`;
+
+  const body =
+    section('Needs Attention', 'attention-group', 'failed', attentionTests) +
+    section('Flaky', 'flaky-group', 'flaky', flakyTests) +
+    section('Passing', 'passed-group', 'passed', passingTests) +
+    section('Skipped', 'skipped-group', 'skipped', skippedTests);
+
+  if (body) return body;
+
+  return `
+                <div class="empty-state">
+                  <div class="empty-state-title">No test results yet</div>
+                  <div class="empty-state-message">Run <code>sentinel test</code> to generate your first report.</div>
+                </div>`;
+}
+
 function generateTestListItems(results: TestResultData[], showTraceSection: boolean, attention: AttentionSets = { newFailures: new Set(), regressions: new Set(), fixed: new Set() }, quarantinedTestIds?: Set<string>): string {
   return results.map(test => {
     const cardId = sanitizeId(test.testId);
@@ -1052,7 +1112,8 @@ ${quarantineCount > 0 ? `            <button class="filter-chip attention-quaran
           <div class="test-list-panel">
             <div class="test-list-header">
               <div class="test-list-tabs" role="tablist" aria-label="Test grouping options">
-                <button class="tab-btn active" data-tab="all" onclick="switchTestTab('all')" role="tab" aria-selected="true" aria-controls="tab-all">All Tests</button>
+                <button class="tab-btn active" data-tab="by-attention" onclick="switchTestTab('by-attention')" role="tab" aria-selected="true" aria-controls="tab-by-attention">Needs Attention</button>
+                <button class="tab-btn" data-tab="all" onclick="switchTestTab('all')" role="tab" aria-selected="false" aria-controls="tab-all">All Tests</button>
                 <button class="tab-btn" data-tab="by-file" onclick="switchTestTab('by-file')" role="tab" aria-selected="false" aria-controls="tab-by-file">By Spec</button>
                 <button class="tab-btn" data-tab="by-status" onclick="switchTestTab('by-status')" role="tab" aria-selected="false" aria-controls="tab-by-status">By Status</button>
                 <button class="tab-btn" data-tab="by-stability" onclick="switchTestTab('by-stability')" role="tab" aria-selected="false" aria-controls="tab-by-stability">By Stability</button>
@@ -1070,8 +1131,12 @@ ${quarantineCount > 0 ? `            <button class="filter-chip attention-quaran
                 <div class="empty-state-message">No tests match your current filters. Try adjusting your search or filter criteria.</div>
                 <button class="empty-state-action" onclick="clearAllFilters()">Clear filters</button>
               </div>
+              <!-- Needs Attention Tab (default) -->
+              <div class="test-tab-content active" id="tab-by-attention" role="tabpanel" aria-labelledby="tab-by-attention-label">
+                ${generateAttentionGroupedContent(sortedResults, showTraceSection, attentionSets, quarantinedTestIds)}
+              </div>
               <!-- All Tests Tab -->
-              <div class="test-tab-content active" id="tab-all" role="tabpanel" aria-labelledby="tab-all-label">
+              <div class="test-tab-content" id="tab-all" role="tabpanel" aria-labelledby="tab-all-label">
                 <div role="list" aria-label="All tests">
                   ${generateTestListItems(sortedResults, showTraceSection, attentionSets, quarantinedTestIds)}
                 </div>
@@ -6960,7 +7025,7 @@ function generateScripts(
     const detailsBodyCache = new WeakMap();
     let currentView = 'overview';
     let selectedTestId = null;
-    let currentTestTab = 'all';
+    let currentTestTab = 'by-attention';
 
     /* ============================================
        APP SHELL NAVIGATION
@@ -7002,6 +7067,29 @@ function generateScripts(
       }
 
       currentView = view;
+      updateLocationHash();
+    }
+
+    // Deep-link routing: reflect the current view/test in the URL hash so
+    // reports are shareable and agents can link straight to a specific test.
+    function updateLocationHash() {
+      try {
+        let hash = '#view=' + currentView;
+        if (selectedTestId) hash += '&test=' + selectedTestId;
+        history.replaceState(null, '', hash);
+      } catch (e) { /* history API unavailable (file://) - ignore */ }
+    }
+
+    function applyLocationHash() {
+      const raw = (location.hash || '').replace(/^#/, '');
+      if (!raw) return;
+      const params = {};
+      raw.split('&').forEach(pair => {
+        const [k, v] = pair.split('=');
+        if (k) params[k] = decodeURIComponent(v || '');
+      });
+      if (params.view) switchView(params.view);
+      if (params.test) selectTest(params.test);
     }
 
     // Track global historical run selection
@@ -7181,6 +7269,7 @@ function generateScripts(
       }
 
       selectedTestId = testId;
+      updateLocationHash();
 
       // Get the pre-rendered card from hidden container - use getElementById for reliability
       const cardId = 'card-' + testId;
@@ -8238,6 +8327,10 @@ function generateScripts(
           el.style.display = 'none';
         });
       }
+
+      // Apply any deep link in the URL, then respond to hash changes.
+      applyLocationHash();
+      window.addEventListener('hashchange', applyLocationHash);
     });
 
 ${includeGallery ? `    // Gallery functions\n${generateGalleryScript()}` : ''}

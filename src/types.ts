@@ -218,6 +218,21 @@ export interface TestResultSnapshot {
   aiSuggestion?: string;
   aiSuggestionHtml?: string;
   attachments?: AttachmentData;
+  // Agent-native diagnose fields (additive, optional — populated when the
+  // reporter runs under `sentinel test`). Used by `sentinel diagnose --json`,
+  // the MCP server, and Scribe. Heavy base64 payloads are intentionally omitted.
+  outcome?: TestResultData['outcome'];
+  flakinessScore?: number;
+  flakinessIndicator?: string;
+  performanceTrend?: string;
+  stabilityGrade?: StabilityScore['grade'];
+  stabilityOverall?: number;
+  needsAttention?: boolean;
+  failureClusterType?: string;
+  tags?: string[];
+  suite?: string;
+  browser?: string;
+  project?: string;
 }
 
 export interface RunSnapshotFile {

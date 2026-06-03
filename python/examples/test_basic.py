@@ -1,5 +1,5 @@
 """
-Example: Basic usage of Playwright Smart Reporter Python bridge
+Example: Basic usage of qa-sentinel Python bridge
 """
 import pytest
 

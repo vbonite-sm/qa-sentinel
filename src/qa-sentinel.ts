@@ -71,7 +71,8 @@ import type { CIInfo } from './types';
 import * as crypto from 'node:crypto';
 import { analyzeSelector } from './agent/selector-analyzer';
 import { appendHealSuggestion } from './agent/heal-store';
-import { cleanupFixtureFiles } from './cli/sentinel-dir';
+import { cleanupFixtureFiles, ensureRunDir } from './cli/sentinel-dir';
+import { writeRunSnapshot } from './cli/run-store';
 
 // ============================================================================
 // Smart Reporter
@@ -737,6 +738,22 @@ class QaSentinel implements Reporter {
 
     // Update history
     this.historyCollector.updateHistory(this.results);
+
+    // Sentinel CLI: persist the canonical run snapshot + a copy of the report
+    // into .sentinel/runs/<runId>/ so `sentinel diagnose`, `sentinel sync`
+    // (Scribe), the MCP server, and `sentinel report` have a single source of
+    // truth. Non-fatal: a write failure must never break the run.
+    if (this.isCLIMode) {
+      const runId = process.env['SENTINEL_RUN_ID'] ?? 'unknown';
+      try {
+        const runTimestamp = new Date(this.startTime).toISOString();
+        writeRunSnapshot(runId, runTimestamp, this.results);
+        const runDir = ensureRunDir(runId);
+        fs.copyFileSync(outputPath, path.join(runDir, 'report.html'));
+      } catch {
+        // Non-fatal
+      }
+    }
 
     // Send webhook notifications if enabled - use outcome-based counting
     const failed = this.results.filter(r =>
